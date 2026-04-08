@@ -43,6 +43,8 @@ npm run build
 
 GitHub Pages 项目站会通过 `VITE_BASE` 自动处理子路径。
 
+**打开站点时请用完整项目地址**，例如 `https://<用户名>.github.io/<仓库名>/`。若只打开 `https://<用户名>.github.io/`（用户主页根路径）且未单独部署用户站，会出现 **404**。构建时会生成与首页相同的 `404.html`，便于子路径刷新后仍由 Vue Router 接管。
+
 ### GitHub Pages 上使用 Supabase（重要）
 
 CI 构建时会把 `VITE_*` **打进前端包**，请在仓库 **Settings → Secrets and variables → Actions** 添加与本地一致的：
