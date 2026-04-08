@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { PACK_BRANCH_KINDS } from '../types'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -31,13 +32,21 @@ const nav = [
   { to: '/manage', label: '我的上传' },
 ]
 
+function branchFilterQuery(): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const k of PACK_BRANCH_KINDS) {
+    const v = current.query[k]
+    const s = typeof v === 'string' ? v.trim() : Array.isArray(v) && typeof v[0] === 'string' ? v[0].trim() : ''
+    if (s) out[k] = s
+  }
+  return out
+}
+
 function goSearch() {
   const q = qLocal.value.trim()
-  if (!q) {
-    router.push({ name: 'search' })
-    return
-  }
-  router.push({ name: 'search', query: { q } })
+  const next: Record<string, string> = { ...branchFilterQuery() }
+  if (q) next.q = q
+  router.push({ name: 'search', query: Object.keys(next).length ? next : {} })
 }
 
 const onSearchPage = computed(() => current.name === 'search')
