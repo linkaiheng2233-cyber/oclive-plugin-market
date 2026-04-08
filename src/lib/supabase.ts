@@ -1,4 +1,4 @@
-﻿import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 let cached: SupabaseClient | null | undefined
 
@@ -10,7 +10,13 @@ export function getSupabaseClient() {
     cached = null
     return cached
   }
-  cached = createClient(url, anonKey)
+  cached = createClient(url, anonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  })
   return cached
 }
 

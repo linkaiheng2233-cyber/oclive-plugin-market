@@ -7,6 +7,8 @@
 
 ## 开发
 
+推荐使用 **Node 22**（与 CI 一致；仓库根目录有 `.node-version` 供 nvm / fnm 等读取）。
+
 ```bash
 npm install
 npm run dev
@@ -54,3 +56,8 @@ CI 构建时会把 `VITE_*` **打进前端包**，请在仓库 **Settings → Se
 同时在 Supabase **Authentication → URL Configuration** 的 **Redirect URLs** 中加入你的 Pages 地址，例如：
 
 `https://<你的用户名>.github.io/<仓库名>/**`
+
+### 安全
+
+- **不要**把 `VITE_SUPABASE_ANON_KEY`、`.env.local` 内容提交到 Git，也**不要**在聊天、截图、公开 issue 里贴出完整密钥；`anon` 虽非 `service_role`，仍可能被滥用刷配额。
+- 若密钥曾泄露，请到 Supabase **Project Settings → API** 轮换 **anon** key，并同步更新本地 `.env.local` 与 GitHub Actions Secrets。
