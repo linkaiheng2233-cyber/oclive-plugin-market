@@ -35,6 +35,10 @@ jobs:
           npm run build
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+          # 在仓库 Settings → Secrets and variables → Actions 中配置（与本地 .env.local 一致）
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_ADMIN_EMAILS: ${{ secrets.VITE_ADMIN_EMAILS }}
 
       - uses: actions/configure-pages@v4
 

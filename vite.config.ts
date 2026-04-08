@@ -5,4 +5,9 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   base: process.env.VITE_BASE || '/',
+  server: {
+    port: 5173,
+    /** 与 Supabase Redirect URLs（localhost:5173）一致；占用时直接报错，避免静默换端口导致邮件链接打不开 */
+    strictPort: true,
+  },
 })

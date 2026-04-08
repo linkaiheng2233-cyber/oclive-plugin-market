@@ -1,9 +1,9 @@
-# oclive 插件市场（静态站）
+# oclive 插件市场（静态站 + Supabase 可选后端）
 
-列出 **Remote HTTP 侧车** 项目信息；**下载与源码在作者仓库**，本站只维护 `public/data/plugins.json`。
+列出 **角色包 / 插件 / 模块**，支持上传；角色包可接入 Supabase 云端存储。
 
-- **契约说明**（主仓）：[PLUGIN_WEB_SECTION.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)  
-- **JSON-RPC 协议**：[REMOTE_PLUGIN_PROTOCOL.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md)
+- 契约说明：[PLUGIN_WEB_SECTION.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)
+- 协议文档：[REMOTE_PLUGIN_PROTOCOL.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md)
 
 ## 开发
 
@@ -12,32 +12,45 @@ npm install
 npm run dev
 ```
 
-浏览器打开终端里提示的本地地址（默认 `http://localhost:5173`）。
+## Supabase（云端账号 + 内容）
 
-## 构建
+1. 复制 `.env.example` 为 `.env.local`，填入：
+
+```bash
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+VITE_ADMIN_EMAILS=你的邮箱@example.com
+```
+
+2. **SQL Editor** 整段执行 `supabase/schema.sql`（见 `supabase/README.md` 顺序说明）。
+3. **Authentication**：启用邮箱登录（OTP / magic link）；在 **URL Configuration** 配置 Site URL 与 Redirect URLs（本地 + 线上），否则邮件链接无法回站点。
+4. 用站点 **个人设置** 发登录邮件并完成一次登录（会写入 `profiles`）。
+5. 管理员（二选一即可）：
+   - 改 `set_admin_by_email.sql` 里的邮箱后执行；或
+   - 仅依赖 `VITE_ADMIN_EMAILS`（无需改库）。
+
+**是的：当前实现里管理员与普通用户一样，用邮箱魔法链接登录**；是否在 UI 里显示「管理」由 `profiles.is_admin` 或 `VITE_ADMIN_EMAILS` 决定。
+
+> 未配置环境变量时，上传将退回本地浏览器存储（仅自己可见）。
+
+## 构建与部署
 
 ```bash
 npm run build
 ```
 
-- **本地预览根路径**：`vite.config.ts` 默认 `base` 为 `/`，直接 `npm run preview` 即可。  
-- **GitHub Pages（项目站）**：地址为 `https://<用户>.github.io/<仓库名>/`，CI 会自动设置 `VITE_BASE=/<仓库名>/`，无需手改。
+GitHub Pages 项目站会通过 `VITE_BASE` 自动处理子路径。
 
-产物在 `dist/`。
+### GitHub Pages 上使用 Supabase（重要）
 
-## GitHub Pages 部署（本仓库已含 workflow）
+CI 构建时会把 `VITE_*` **打进前端包**，请在仓库 **Settings → Secrets and variables → Actions** 添加与本地一致的：
 
-1. 在 GitHub 打开本仓库 **Settings → Pages**。  
-2. **Build and deployment**：Source 选 **GitHub Actions**（不要选 branch 直出 `dist`）。  
-3. 推送至 `main` 后，工作流 **Deploy to GitHub Pages** 会构建并发布；站点 URL 在 **Actions** 与 **Pages** 页面可见。
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_ANON_KEY`
+- `VITE_ADMIN_EMAILS`（可选）
 
-若首次部署报权限错误，确认 **Settings → Actions → General → Workflow permissions** 为 **Read and write**，并允许 **GitHub Pages** 创建。
+否则线上站点无法连接云端，只会退回本地存储逻辑。
 
-## 新增条目
+同时在 Supabase **Authentication → URL Configuration** 的 **Redirect URLs** 中加入你的 Pages 地址，例如：
 
-编辑 `public/data/plugins.json`，在 `plugins` 数组中追加对象（字段见主仓 `PLUGIN_WEB_SECTION.md`）。
-
-## CI
-
-- **Pull Request**：`.github/workflows/ci.yml` 仅做 `npm ci` + `npm run build`（与 Pages 相同的 `VITE_BASE`）。  
-- **Push `main`**：`.github/workflows/pages.yml` 构建并部署到 Pages。
+`https://<你的用户名>.github.io/<仓库名>/**`
