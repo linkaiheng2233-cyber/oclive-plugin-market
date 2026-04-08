@@ -144,6 +144,7 @@ function violatesContentPolicy(payload: UploadPayload) {
           payload.sections.persona,
           payload.sections.identity,
           payload.sections.world,
+          payload.sections.schedule,
         ].join(' ')
       : [payload.name, payload.intro, payload.author].join(' ')
   const lower = text.toLowerCase()
@@ -164,6 +165,7 @@ function itemToPack(item: ContentItem): CharacterPack {
       persona: (m.persona as string) || '',
       identity: (m.identity as string) || '',
       world: (m.world as string) || '',
+      schedule: (m.schedule as string) || '',
     },
   }
 }
@@ -272,6 +274,17 @@ async function load() {
       ...readLocalArray<PackBranch>(LS_KEYS.branches),
       ...siteData.value.pack_branches,
     ]
+
+    siteData.value.character_packs = siteData.value.character_packs.map((p) => ({
+      ...p,
+      sections: {
+        scene: p.sections?.scene ?? '',
+        persona: p.sections?.persona ?? '',
+        identity: p.sections?.identity ?? '',
+        world: p.sections?.world ?? '',
+        schedule: p.sections?.schedule ?? '',
+      },
+    }))
   } catch (e) {
     error.value = e instanceof Error ? e.message : String(e)
   } finally {
@@ -393,6 +406,7 @@ async function submitToCloud(payload: UploadPayload) {
         persona: payload.sections.persona,
         identity: payload.sections.identity,
         world: payload.sections.world,
+        schedule: payload.sections.schedule,
       },
     }
   } else if (payload.kind === 'plugin') {

@@ -24,7 +24,7 @@ watch(
 
 const nav = [
   { to: '/', label: '主页' },
-  { to: '/packs', label: '角色包' },
+  { to: '/packs', label: '角色包', matchPrefix: '/packs' },
   { to: '/plugins', label: '插件' },
   { to: '/modules', label: '模块' },
   { to: '/me', label: '个人设置' },
@@ -41,6 +41,12 @@ function goSearch() {
 }
 
 const onSearchPage = computed(() => current.name === 'search')
+
+function navActive(to: string, matchPrefix?: string) {
+  if (matchPrefix) return current.path.startsWith(matchPrefix)
+  if (to === '/') return current.name === 'home'
+  return current.path === to || current.path.startsWith(`${to}/`)
+}
 </script>
 
 <template>
@@ -57,7 +63,9 @@ const onSearchPage = computed(() => current.name === 'search')
             :key="n.to"
             :to="n.to"
             class="nav-link"
-            active-class="nav-link--active"
+            active-class=""
+            exact-active-class=""
+            :class="{ 'nav-link--active': navActive(n.to, n.matchPrefix) }"
           >
             {{ n.label }}
           </RouterLink>

@@ -90,6 +90,7 @@ const packSections = reactive<CharacterPackSections>({
   persona: '',
   identity: '',
   world: '',
+  schedule: '',
 })
 
 const branchExtra = reactive({
@@ -143,6 +144,7 @@ function resetForm() {
   packSections.persona = ''
   packSections.identity = ''
   packSections.world = ''
+  packSections.schedule = ''
   branchExtra.branchKind = 'scene'
   branchExtra.content = ''
 }
@@ -172,6 +174,7 @@ function submit() {
         persona: packSections.persona.trim(),
         identity: packSections.identity.trim(),
         world: packSections.world.trim(),
+        schedule: packSections.schedule.trim(),
       },
     })
   } else if (activeKind.value === 'pack-branch') {
@@ -290,6 +293,14 @@ onUnmounted(() => {
               <label class="field"><span>人设</span><textarea v-model="packSections.persona" rows="2" required /></label>
               <label class="field"><span>身份</span><textarea v-model="packSections.identity" rows="2" required /></label>
               <label class="field"><span>世界观</span><textarea v-model="packSections.world" rows="2" required /></label>
+              <label class="field">
+                <span>日程与生活</span>
+                <textarea
+                  v-model="packSections.schedule"
+                  rows="2"
+                  placeholder="角色日常节奏、作息与可穿插的生活细节（可选）"
+                />
+              </label>
             </template>
 
             <template v-else-if="activeKind === 'pack-branch'">
@@ -300,6 +311,7 @@ onUnmounted(() => {
                   <option value="persona">人设</option>
                   <option value="identity">身份</option>
                   <option value="world">世界观</option>
+                  <option value="schedule">日程与生活</option>
                 </select>
               </label>
               <label class="field">

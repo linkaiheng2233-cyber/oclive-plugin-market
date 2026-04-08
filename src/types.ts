@@ -9,15 +9,41 @@ export interface PluginListing {
   author: string
 }
 
-/** 角色包详情子页：场景 / 人设 / 身份 / 世界观 */
+/** 角色包详情子页：场景 / 人设 / 身份 / 世界观 / 日程与生活 */
 export interface CharacterPackSections {
   scene: string
   persona: string
   identity: string
   world: string
+  /** 角色日程安排、日常生活节奏等 */
+  schedule: string
 }
 
 export type PackBranchKind = keyof CharacterPackSections
+
+/** 分支类型展示名（与上传、列表一致） */
+export const PACK_BRANCH_LABELS: Record<PackBranchKind, string> = {
+  scene: '场景',
+  persona: '人设',
+  identity: '自定义身份',
+  world: '世界观',
+  schedule: '日程与生活',
+}
+
+export const PACK_BRANCH_KINDS: PackBranchKind[] = ['scene', 'persona', 'identity', 'world', 'schedule']
+
+/** 模块组合页导出给「角色包编写器」粘贴的 JSON（version 1） */
+export type MarketComposeExportV1 = {
+  version: 1
+  source: 'oclive-plugin-market'
+  assembled: {
+    scene: string
+    persona: string
+    identity: string
+    world: string
+    schedule: string
+  }
+}
 
 /** 角色包单独分支素材（可用于自由组合） */
 export interface PackBranch {

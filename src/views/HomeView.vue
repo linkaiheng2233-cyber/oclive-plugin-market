@@ -13,7 +13,7 @@ import { RouterLink } from 'vue-router'
     <div class="tiles">
       <RouterLink to="/packs" class="tile">
         <span class="tile-k">角色包</span>
-        <span class="tile-d">图集入口 · 场景 / 人设 / 身份 / 世界观</span>
+        <span class="tile-d">完整包与子模块 · 搜索筛选 · 自由组合</span>
       </RouterLink>
       <RouterLink to="/plugins" class="tile">
         <span class="tile-k">插件</span>

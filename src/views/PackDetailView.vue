@@ -11,8 +11,9 @@ const pack = computed(() => data.value?.character_packs.find((p) => p.id === pro
 const tabs = [
   { key: 'scene' as const, label: '场景' },
   { key: 'persona' as const, label: '人设' },
-  { key: 'identity' as const, label: '身份' },
+  { key: 'identity' as const, label: '自定义身份' },
   { key: 'world' as const, label: '世界观' },
+  { key: 'schedule' as const, label: '日程与生活' },
 ]
 
 const active = ref<(typeof tabs)[number]['key']>('scene')
@@ -28,11 +29,11 @@ const body = computed(() => {
   <p v-else-if="error" class="state err">{{ error }}</p>
   <div v-else-if="!pack" class="missing">
     <p>未找到该角色包。</p>
-    <RouterLink to="/packs">返回角色包列表</RouterLink>
+    <RouterLink :to="{ name: 'packs-full' }">返回角色包列表</RouterLink>
   </div>
   <article v-else class="detail">
     <nav class="crumb">
-      <RouterLink to="/packs">角色包</RouterLink>
+      <RouterLink :to="{ name: 'packs-full' }">角色包</RouterLink>
       <span class="sep">/</span>
       <span>{{ pack.name }}</span>
     </nav>

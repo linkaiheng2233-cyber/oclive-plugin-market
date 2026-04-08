@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { useSiteData } from '../composables/useSiteData'
+import { PACK_BRANCH_LABELS, type PackBranchKind } from '../types'
 
 const route = useRoute()
 const { data, loading, error } = useSiteData()
@@ -87,7 +88,9 @@ const total = computed(
       <h2>角色包分支</h2>
       <ul class="list">
         <li v-for="b in branchHits" :key="b.id">
-          <RouterLink to="/packs" class="hit">{{ b.name }}（{{ b.kind }}）</RouterLink>
+          <RouterLink :to="`/packs/part/${b.kind}`" class="hit">
+            {{ b.name }}（{{ PACK_BRANCH_LABELS[b.kind as PackBranchKind] || b.kind }}）
+          </RouterLink>
           <span class="snippet">{{ b.intro }}</span>
         </li>
       </ul>
