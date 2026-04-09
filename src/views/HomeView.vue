@@ -23,6 +23,10 @@ import { RouterLink } from 'vue-router'
         <span class="tile-k">可替换模块</span>
         <span class="tile-d">记忆、情感等系统示意</span>
       </RouterLink>
+      <RouterLink to="/versions" class="tile">
+        <span class="tile-k">版本与下载</span>
+        <span class="tile-d">启动器、编写器、oclive 的 GitHub 发布列表</span>
+      </RouterLink>
       <RouterLink to="/me" class="tile">
         <span class="tile-k">个人主页</span>
         <span class="tile-d">展示与自定义（占位）</span>

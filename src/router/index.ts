@@ -21,6 +21,7 @@ export default createRouter({
     { path: '/manage', name: 'manage', component: () => import('../views/ManageView.vue') },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
     { path: '/search', name: 'search', component: () => import('../views/SearchView.vue') },
+    { path: '/versions', name: 'versions', component: () => import('../views/VersionsView.vue') },
   ],
   scrollBehavior() {
     return { top: 0 }

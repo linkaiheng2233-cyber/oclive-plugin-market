@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
+import { RouterLink } from 'vue-router'
 import type { Session } from '@supabase/supabase-js'
 import AppHeader from './components/AppHeader.vue'
 import UploadDrawer from './components/UploadDrawer.vue'
@@ -553,6 +554,8 @@ onUnmounted(() => {
 
     <footer class="foot">
       <p>
+        <RouterLink to="/versions">软件版本与下载</RouterLink>
+        ·
         文档：
         <a
           href="https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md"
