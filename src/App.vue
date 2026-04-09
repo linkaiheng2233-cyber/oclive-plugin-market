@@ -231,32 +231,35 @@ async function fetchPublishedContent() {
   })
 }
 
+/** 静态站点数据与 Supabase 列表互不依赖，并行请求以缩短首屏 */
+async function loadStaticSiteData(baseUrl: string): Promise<SiteData> {
+  let r = await fetch(`${baseUrl}data/site.json`)
+  if (r.ok) {
+    const base = (await r.json()) as SiteData
+    return {
+      ...base,
+      pack_branches: base.pack_branches ?? [],
+    }
+  }
+  r = await fetch(`${baseUrl}data/plugins.json`)
+  if (!r.ok) throw new Error(`无法加载 site.json 或 plugins.json（HTTP ${r.status}）`)
+  const j = (await r.json()) as { plugins: SiteData['plugins'] }
+  return {
+    character_packs: [],
+    plugins: j.plugins ?? [],
+    modules: [],
+    pack_branches: [],
+  }
+}
+
 async function load() {
   loading.value = true
   error.value = ''
   try {
     const baseUrl = import.meta.env.BASE_URL
-    let r = await fetch(`${baseUrl}data/site.json`)
-    if (r.ok) {
-      const base = (await r.json()) as SiteData
-      siteData.value = {
-        ...base,
-        pack_branches: base.pack_branches ?? [],
-      }
-    } else {
-      r = await fetch(`${baseUrl}data/plugins.json`)
-      if (!r.ok) throw new Error(`无法加载 site.json 或 plugins.json（HTTP ${r.status}）`)
-      const j = (await r.json()) as { plugins: SiteData['plugins'] }
-      siteData.value = {
-        character_packs: [],
-        plugins: j.plugins ?? [],
-        modules: [],
-        pack_branches: [],
-      }
-    }
+    const [baseData, cloudItems] = await Promise.all([loadStaticSiteData(baseUrl), fetchPublishedContent()])
+    siteData.value = baseData
     if (!siteData.value) return
-
-    const cloudItems = await fetchPublishedContent()
     const cloudPacks = cloudItems.filter((x) => x.type === 'character').map(itemToPack)
     const cloudPlugins = cloudItems.filter((x) => x.type === 'plugin').map(itemToPlugin)
     const cloudModules = cloudItems.filter((x) => x.type === 'module').map(itemToModule)

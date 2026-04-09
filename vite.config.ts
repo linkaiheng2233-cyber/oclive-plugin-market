@@ -25,6 +25,17 @@ function spaFallback404() {
 export default defineConfig({
   plugins: [vue(), spaFallback404()],
   base: process.env.VITE_BASE || '/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/@supabase')) return 'supabase'
+          if (id.includes('node_modules/vue-router')) return 'vue-router'
+          if (id.includes('node_modules/vue/')) return 'vue'
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
     /** 与 Supabase Redirect URLs（localhost:5173）一致；占用时直接报错，避免静默换端口导致邮件链接打不开 */
