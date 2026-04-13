@@ -58,7 +58,9 @@ npm run build
 
 GitHub Pages 项目站会通过 `VITE_BASE` 自动处理子路径。构建生成 `404.html` 以便子路径刷新。
 
-请在仓库 **Settings → Secrets and variables → Actions** 配置与本地一致的 `VITE_*`（见上）。
+请在仓库 **Settings → Secrets and variables → Actions** 配置与本地一致的 `VITE_*`（变量名见 `.env.example`）。**我无法替你在网页上添加 Secrets**，需你登录 GitHub 自行粘贴 Supabase 里的 URL 与 anon key。
+
+**Settings → Pages → Build and deployment → Source** 请选择 **GitHub Actions**（不要选 branch `gh-pages`，除非你改用那种方式）。配置好 Secrets 后，**push 到 `main`** 会自动构建并部署到 Pages。
 
 ### 安全
 
