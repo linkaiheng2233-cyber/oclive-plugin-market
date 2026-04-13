@@ -21,3 +21,7 @@
 ## 可选：演示数据（沐沐语气）
 
 登录至少一次后，可在 SQL Editor 执行 `seed_demo_mumu.sql`，插入一条欢迎公告和一条示例插件（`author_id` 取最早注册的 `profiles`）。不要重复执行，否则会重复条目。
+
+## 公告脚本（`announcements/`）
+
+例如 `announcements/2026-04-09_dev_plugins_and_security_mumu.sql`：沐沐语气开发计划公告。**仅当存在 `profiles.is_admin = true` 的账号时**才会插入成功；请先完成上面的管理员设置。
