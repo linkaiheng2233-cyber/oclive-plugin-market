@@ -24,4 +24,4 @@
 
 ## 公告脚本（`announcements/`）
 
-例如 `announcements/2026-04-09_dev_plugins_and_security_mumu.sql`：沐沐语气开发计划公告。**仅当存在 `profiles.is_admin = true` 的账号时**才会插入成功；请先完成上面的管理员设置。
+例如 `announcements/2026-04-09_dev_plugins_and_security_mumu.sql`：沐沐语气开发计划公告。默认用 **方案 A**（取最早一条 `profiles` 作为 `author_id`），在 SQL Editor 执行不会因「没有管理员」而插入 0 行。执行后可用文件末尾注释里的 `select` 自查是否插入成功。

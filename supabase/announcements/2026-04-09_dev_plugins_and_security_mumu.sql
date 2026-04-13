@@ -1,7 +1,8 @@
 -- 沐沐语气 · 开发计划公告
--- RLS：仅 is_admin 可插入 type=announcement。请先 set_admin 或 Table Editor 设 is_admin，再执行。
--- Supabase SQL Editor 整段执行一次；同标题重复可改 title 后再跑。
+-- 在 Supabase SQL Editor 执行时一般为 postgres 角色，会绕过 RLS；author_id 取「任意一条」profiles 即可插入。
+-- 若你坚持用 is_admin 当作者，把下面「方案 A」整段注释掉，改用「方案 B」。
 
+-- ========== 方案 A（推荐：不依赖 is_admin，避免 0 行插入）==========
 insert into public.content_items (
   type, title, description, tags, author_id, status, download_url, version, metadata
 )
@@ -22,8 +23,23 @@ select
   '1.0.0',
   '{"voice": "mumu"}'::jsonb
 from public.profiles p
-where p.is_admin = true
 order by p.created_at asc
 limit 1;
 
--- 若插入 0 行：当前没有 is_admin 用户，请先把你的 profiles.is_admin 设为 true 后再执行。
+-- 执行后在 SQL Editor 跑下面这句，确认是否多了一条公告（应看到新标题）：
+-- select id, title, created_at from public.content_items where type = 'announcement' order by created_at desc limit 5;
+
+-- ========== 方案 B（仅当存在管理员时插入；否则 0 行）==========
+-- insert into public.content_items (
+--   type, title, description, tags, author_id, status, download_url, version, metadata
+-- )
+-- select
+--   'announcement',
+--   '沐沐的小喇叭：接下来要忙插件和角色包啦',
+--   E'...同上正文...',
+--   array['沐沐', '公告', '开发计划']::text[],
+--   p.id, 'published', '', '1.0.0', '{"voice": "mumu"}'::jsonb
+-- from public.profiles p
+-- where p.is_admin = true
+-- order by p.created_at asc
+-- limit 1;
