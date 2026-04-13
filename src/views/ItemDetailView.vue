@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
+import { mumu } from '../content/mumuCopy'
 import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
 
 const props = defineProps<{ id: string }>()
@@ -21,7 +22,7 @@ async function load() {
   const id = props.id
   if (!supabase || !id) {
     loading.value = false
-    err.value = '无法加载'
+    err.value = mumu.noSupabase
     return
   }
   loading.value = true
@@ -51,14 +52,14 @@ function openDownload() {
 <template>
   <div class="detail">
     <nav class="crumb">
-      <RouterLink to="/browse">浏览</RouterLink>
+      <RouterLink to="/browse">{{ mumu.detailCrumbBrowse }}</RouterLink>
       <span class="sep">/</span>
       <span>详情</span>
     </nav>
 
-    <p v-if="loading" class="state">加载中…</p>
-    <p v-else-if="err" class="state err">{{ err }}</p>
-    <div v-else-if="!item" class="state">未找到该内容。</div>
+    <p v-if="loading" class="state">{{ mumu.detailLoading }}</p>
+    <p v-else-if="err" class="state err">{{ mumu.detailLoadErr }}{{ err }}</p>
+    <div v-else-if="!item" class="state">{{ mumu.detailNotFound }}</div>
     <article v-else>
       <header class="header">
         <h1>{{ item.title }}</h1>
@@ -78,9 +79,9 @@ function openDownload() {
 
       <div v-if="showDownload" class="dl">
         <button type="button" class="btn" @click="openDownload">下载</button>
-        <p class="hint">下载链接由作者提供，Oclive 不对其安全性负责。</p>
+        <p class="hint">{{ mumu.dlHint }}</p>
       </div>
-      <div v-else-if="isAnnouncement" class="note">本公告无外部下载链接。</div>
+      <div v-else-if="isAnnouncement" class="note">{{ mumu.detailNoDlAnnouncement }}</div>
     </article>
   </div>
 </template>

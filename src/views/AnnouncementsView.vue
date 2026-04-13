@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { mumu } from '../content/mumuCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import type { ContentItem } from '../types'
@@ -13,7 +14,7 @@ const items = ref<ContentItem[]>([])
 async function load() {
   if (!supabase) {
     loading.value = false
-    err.value = '未配置 Supabase。'
+    err.value = mumu.noSupabase
     return
   }
   loading.value = true
@@ -46,19 +47,19 @@ function formatTime(iso: string) {
 <template>
   <div class="page">
     <header class="head">
-      <h1>公告</h1>
-      <p class="sub">维护通知与社区事项</p>
+      <h1>{{ mumu.announcementsTitle }}</h1>
+      <p class="sub">{{ mumu.announcementsSub }}</p>
     </header>
 
-    <p v-if="loading" class="state">加载中…</p>
+    <p v-if="loading" class="state">{{ mumu.loading }}</p>
     <p v-else-if="err" class="state err">{{ err }}</p>
-    <ul v-else class="list">
+    <ul v-else-if="items.length" class="list">
       <li v-for="a in items" :key="a.id" class="row">
         <RouterLink :to="{ name: 'item-detail', params: { id: a.id } }" class="link">{{ a.title }}</RouterLink>
         <time class="time" :datetime="a.created_at">{{ formatTime(a.created_at) }}</time>
       </li>
-      <li v-if="!items.length" class="empty">暂无公告</li>
     </ul>
+    <p v-else class="empty">{{ mumu.emptyAnnouncements }}</p>
   </div>
 </template>
 
@@ -69,6 +70,7 @@ function formatTime(iso: string) {
 .sub {
   margin: 0 0 20px;
   color: var(--fg-muted);
+  line-height: 1.55;
 }
 .state {
   color: var(--fg-muted);
@@ -103,5 +105,6 @@ function formatTime(iso: string) {
 .empty {
   padding: 24px 0;
   color: var(--fg-muted);
+  line-height: 1.6;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { mumu } from '../content/mumuCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import type { ContentItem } from '../types'
@@ -30,29 +31,32 @@ onMounted(async () => {
 })
 
 const hub = [
-  { to: '/browse', title: '浏览资源', desc: '查看社区已发布的角色包、插件、模块与分支', primary: true },
-  { to: '/submit', title: '发布资源', desc: '登录后提交下载链接与说明', primary: true },
-  { to: '/announcements', title: '公告', desc: '维护通知与社区公告', primary: false },
-  { to: '/versions', title: '版本与下载', desc: '启动器、应用与文档链接', primary: false },
-  { to: '/me', title: '个人设置', desc: '登录与资料', primary: false },
-  { to: '/manage', title: '我的上传', desc: '管理你已提交的内容', primary: false },
+  { to: '/browse', ...mumu.hubBrowse, primary: true },
+  { to: '/submit', ...mumu.hubSubmit, primary: true },
+  { to: '/announcements', ...mumu.hubAnnouncements, primary: false },
+  { to: '/versions', ...mumu.hubVersions, primary: false },
+  { to: '/me', ...mumu.hubMe, primary: false },
+  { to: '/manage', ...mumu.hubManage, primary: false },
 ]
 </script>
 
 <template>
   <div class="home">
-    <section v-if="loadingAnn" class="ann ann--loading" aria-live="polite">加载公告…</section>
+    <section v-if="loadingAnn" class="ann ann--loading" aria-live="polite">{{ mumu.annLoading }}</section>
     <section v-else-if="latestAnnouncement" class="ann">
-      <span class="ann-label">最新公告</span>
+      <span class="ann-label">{{ mumu.annLabel }}</span>
       <RouterLink class="ann-link" :to="{ name: 'item-detail', params: { id: latestAnnouncement.id } }">
         {{ latestAnnouncement.title }}
       </RouterLink>
     </section>
+    <section v-else class="ann ann--soft">
+      <p class="ann-soft-text">{{ mumu.homeWelcomeNoAnn }}</p>
+    </section>
 
     <header class="hero">
-      <p class="eyebrow">Oclive 插件市场 · 社区站</p>
-      <h1>资源发现与发布</h1>
-      <p class="lead">浏览他人作品、提交你的下载链接；后续将接入更多社区能力。</p>
+      <p class="eyebrow">{{ mumu.homeEyebrow }}</p>
+      <h1>{{ mumu.homeTitle }}</h1>
+      <p class="lead">{{ mumu.homeLead }}</p>
     </header>
 
     <section class="tiles" aria-label="功能入口">
@@ -61,12 +65,12 @@ const hub = [
         <span class="tile-d">{{ t.desc }}</span>
       </RouterLink>
       <div class="tile tile--disabled" aria-disabled="true">
-        <span class="tile-k">论坛</span>
-        <span class="tile-d">即将开放</span>
+        <span class="tile-k">{{ mumu.hubForum.title }}</span>
+        <span class="tile-d">{{ mumu.hubForum.desc }}</span>
       </div>
     </section>
 
-    <p v-if="!supabase" class="warn">未配置 Supabase 环境变量时，浏览与发布不可用。请参阅 README。</p>
+    <p v-if="!supabase" class="warn">{{ mumu.noSupabase }}</p>
   </div>
 </template>
 
@@ -84,6 +88,15 @@ const hub = [
   border-radius: 12px;
   border: 1px solid var(--border);
   background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+.ann--soft {
+  align-items: center;
+}
+.ann-soft-text {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--fg-muted);
+  line-height: 1.55;
 }
 .ann--loading {
   color: var(--fg-muted);
@@ -123,9 +136,9 @@ h1 {
 }
 .lead {
   margin: 0;
-  max-width: 54ch;
+  max-width: 56ch;
   color: var(--fg-muted);
-  line-height: 1.6;
+  line-height: 1.65;
   font-size: 1.02rem;
 }
 .tiles {
@@ -184,5 +197,6 @@ h1 {
   background: color-mix(in srgb, var(--danger) 12%, var(--surface));
   color: var(--fg-muted);
   font-size: 0.9rem;
+  line-height: 1.5;
 }
 </style>

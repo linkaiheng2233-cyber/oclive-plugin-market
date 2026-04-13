@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
+import { mumu } from '../content/mumuCopy'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -34,7 +35,7 @@ function navActive(to: string, exact?: boolean, matchPrefix?: string) {
       <div class="left">
         <RouterLink to="/" class="brand">
           <span class="logo" aria-hidden="true">◇</span>
-          <span class="brand-text">OCLive 社区</span>
+          <span class="brand-text">{{ mumu.siteTagline }}</span>
         </RouterLink>
         <nav class="nav" aria-label="主导航">
           <RouterLink

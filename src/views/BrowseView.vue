@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { mumu } from '../content/mumuCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { CONTENT_TYPE_LABELS, type ContentItem, type ContentType, RESOURCE_TYPES } from '../types'
@@ -11,16 +12,38 @@ const loading = ref(true)
 const err = ref('')
 const items = ref<ContentItem[]>([])
 const typeFilter = ref<'all' | ContentType>('all')
+const searchQuery = ref('')
+const sortMode = ref<'newest' | 'oldest' | 'title'>('newest')
 
-const filtered = computed(() => {
+const byType = computed(() => {
   if (typeFilter.value === 'all') return items.value
   return items.value.filter((x) => x.type === typeFilter.value)
+})
+
+const filtered = computed(() => {
+  let list = byType.value
+  const q = searchQuery.value.trim().toLowerCase()
+  if (q) {
+    list = list.filter((x) => {
+      const hay = [x.title, x.description, ...(x.tags || [])].join(' ').toLowerCase()
+      return hay.includes(q)
+    })
+  }
+  const arr = [...list]
+  if (sortMode.value === 'newest') {
+    arr.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  } else if (sortMode.value === 'oldest') {
+    arr.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+  } else {
+    arr.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+  }
+  return arr
 })
 
 async function load() {
   if (!supabase) {
     loading.value = false
-    err.value = '未配置 Supabase，无法加载列表。'
+    err.value = mumu.noSupabase
     return
   }
   loading.value = true
@@ -54,31 +77,56 @@ function formatTime(iso: string) {
 <template>
   <div class="browse">
     <header class="head">
-      <h1>浏览资源</h1>
-      <p class="sub">仅展示已发布内容；按类型筛选。</p>
+      <h1>{{ mumu.browseTitle }}</h1>
+      <p class="sub">{{ mumu.browseSub }}</p>
     </header>
 
-    <div class="filters">
-      <label class="sr-only" for="type-filter">类型</label>
-      <select id="type-filter" v-model="typeFilter" class="select">
-        <option value="all">全部类型</option>
-        <option v-for="t in RESOURCE_TYPES" :key="t" :value="t">{{ CONTENT_TYPE_LABELS[t] }}</option>
-      </select>
+    <div class="toolbar">
+      <label class="sr-only" for="browse-search">搜索</label>
+      <input
+        id="browse-search"
+        v-model="searchQuery"
+        type="search"
+        class="search"
+        :placeholder="mumu.browseSearchPlaceholder"
+        autocomplete="off"
+      />
+      <div class="toolbar-row">
+        <label class="sr-only" for="type-filter">类型</label>
+        <select id="type-filter" v-model="typeFilter" class="select">
+          <option value="all">全部类型</option>
+          <option v-for="t in RESOURCE_TYPES" :key="t" :value="t">{{ CONTENT_TYPE_LABELS[t] }}</option>
+        </select>
+        <label class="sr-only" for="sort-mode">排序</label>
+        <select id="sort-mode" v-model="sortMode" class="select">
+          <option value="newest">{{ mumu.sortNewest }}</option>
+          <option value="oldest">{{ mumu.sortOldest }}</option>
+          <option value="title">{{ mumu.sortTitle }}</option>
+        </select>
+      </div>
     </div>
 
-    <p v-if="loading" class="state">加载中…</p>
+    <p v-if="loading" class="state">{{ mumu.loading }}</p>
     <p v-else-if="err" class="state err">{{ err }}</p>
-    <ul v-else class="list">
-      <li v-for="item in filtered" :key="item.id" class="card">
-        <RouterLink class="title" :to="{ name: 'item-detail', params: { id: item.id } }">{{ item.title }}</RouterLink>
-        <div class="meta">
-          <span class="tag">{{ CONTENT_TYPE_LABELS[item.type] }}</span>
-          <span class="author">{{ item.author_name || '—' }}</span>
-          <time :datetime="item.created_at">{{ formatTime(item.created_at) }}</time>
-        </div>
-      </li>
-      <li v-if="!filtered.length" class="empty">暂无内容</li>
-    </ul>
+    <template v-else>
+      <ul v-if="filtered.length" class="list">
+        <li v-for="item in filtered" :key="item.id" class="card">
+          <RouterLink class="title" :to="{ name: 'item-detail', params: { id: item.id } }">{{ item.title }}</RouterLink>
+          <div class="meta">
+            <span class="tag">{{ CONTENT_TYPE_LABELS[item.type] }}</span>
+            <span class="author">{{ item.author_name || '—' }}</span>
+            <time :datetime="item.created_at">{{ formatTime(item.created_at) }}</time>
+          </div>
+        </li>
+      </ul>
+      <div v-else-if="!items.length" class="empty-box">
+        <p>{{ mumu.emptyBrowse }}</p>
+        <RouterLink class="cta" to="/submit">去发布</RouterLink>
+      </div>
+      <div v-else class="empty-box">
+        <p>{{ mumu.noSearchResults }}</p>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -94,9 +142,32 @@ function formatTime(iso: string) {
   margin: 0 0 18px;
   color: var(--fg-muted);
   font-size: 0.95rem;
+  line-height: 1.55;
 }
-.filters {
-  margin-bottom: 16px;
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.search {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--fg);
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+.search:focus {
+  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  outline-offset: 1px;
 }
 .select {
   padding: 8px 12px;
@@ -105,6 +176,8 @@ function formatTime(iso: string) {
   background: var(--surface-2);
   color: var(--fg);
   font-size: 0.92rem;
+  min-width: 0;
+  flex: 1 1 140px;
 }
 .state {
   color: var(--fg-muted);
@@ -152,10 +225,30 @@ function formatTime(iso: string) {
   color: var(--fg);
   font-weight: 600;
 }
-.empty {
-  padding: 24px;
+.empty-box {
+  padding: 28px 20px;
   text-align: center;
+  border-radius: 14px;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--surface) 92%, var(--bg));
+}
+.empty-box p {
+  margin: 0 0 14px;
   color: var(--fg-muted);
+  line-height: 1.6;
+}
+.cta {
+  display: inline-block;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.cta:hover {
+  filter: brightness(1.05);
 }
 .sr-only {
   position: absolute;

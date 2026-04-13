@@ -3,6 +3,7 @@ import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Session } from '@supabase/supabase-js'
 import AppHeader from './components/AppHeader.vue'
+import { mumu } from './content/mumuCopy'
 import { authContextKey } from './composables/useAuthContext'
 import { getSupabaseClient } from './lib/supabase'
 import type { Profile } from './types'
@@ -127,7 +128,7 @@ async function signInWithEmail(email: string) {
     showToast(`发送失败：${e.message}`)
     return
   }
-  showToast('登录邮件已发送，请到邮箱点击链接。')
+  showToast(mumu.toastEmailSent)
 }
 
 async function signOut() {
@@ -135,7 +136,7 @@ async function signOut() {
   authBusy.value = true
   await supabase.auth.signOut()
   authBusy.value = false
-  showToast('已退出登录。')
+  showToast(mumu.toastSignOut)
 }
 
 onMounted(() => {
@@ -175,7 +176,7 @@ onUnmounted(() => {
           >PLUGIN_WEB_SECTION</a
         >
       </p>
-      <p class="muted">OCLive 社区站</p>
+      <p class="muted">沐沐和 Oclive 祝你用得开心～有问题先看文档，再来社区转转。</p>
     </footer>
   </div>
 </template>

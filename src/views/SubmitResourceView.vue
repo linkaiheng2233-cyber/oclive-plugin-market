@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthContext } from '../composables/useAuthContext'
+import { mumu } from '../content/mumuCopy'
 import { violatesContentPolicy } from '../lib/contentPolicy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_TYPE_LABELS, RESOURCE_TYPES, type ContentItem, type ContentType } from '../types'
@@ -33,7 +34,7 @@ watch([isAdmin, type], () => {
 async function submit() {
   formError.value = ''
   if (!supabase || !userId.value) {
-    formError.value = '请先登录'
+    formError.value = mumu.submitErrorLogin
     return
   }
   const t = title.value.trim()
@@ -41,19 +42,19 @@ async function submit() {
   const v = version.value.trim()
   const url = downloadUrl.value.trim()
   if (!t || !d || !v) {
-    formError.value = '请填写标题、描述与版本'
+    formError.value = mumu.submitErrorFields
     return
   }
   if (type.value !== 'announcement' && !url) {
-    formError.value = '请填写下载链接'
+    formError.value = mumu.submitErrorUrl
     return
   }
   if (type.value === 'announcement' && !isAdmin.value) {
-    formError.value = '无权限发布公告'
+    formError.value = mumu.submitErrorAnnounce
     return
   }
   if (violatesContentPolicy(t, d)) {
-    formError.value = '内容包含禁用词，请修改后重试'
+    formError.value = mumu.submitErrorPolicy
     return
   }
 
@@ -90,8 +91,8 @@ async function submit() {
 <template>
   <div class="submit">
     <header class="head">
-      <h1>发布资源</h1>
-      <p class="sub">提交后即刻公开（V1 无审核）。公告仅管理员可发。</p>
+      <h1>{{ mumu.submitTitle }}</h1>
+      <p class="sub">{{ mumu.submitSub }}</p>
     </header>
 
     <form class="form" @submit.prevent="submit">
@@ -127,7 +128,7 @@ async function submit() {
           placeholder="网盘或 GitHub Release 直链"
           autocomplete="off"
         />
-        <span class="hint">公告可不填；其他类型必填。</span>
+        <span class="hint">{{ mumu.submitHintUrl }}</span>
       </label>
 
       <label class="field">
@@ -137,7 +138,9 @@ async function submit() {
 
       <p v-if="formError" class="err">{{ formError }}</p>
 
-      <button type="submit" class="btn" :disabled="submitting">{{ submitting ? '提交中…' : '发布' }}</button>
+      <button type="submit" class="btn" :disabled="submitting">
+        {{ submitting ? mumu.submitBtnLoading : mumu.submitBtn }}
+      </button>
     </form>
   </div>
 </template>

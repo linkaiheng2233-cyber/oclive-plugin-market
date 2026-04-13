@@ -17,3 +17,7 @@
   - 生产环境：`https://你的域名/**` 以及 GitHub Pages：`https://<用户>.github.io/<仓库>/**`
 
 否则点击邮件里的链接会报 redirect 不允许。
+
+## 可选：演示数据（沐沐语气）
+
+登录至少一次后，可在 SQL Editor 执行 `seed_demo_mumu.sql`，插入一条欢迎公告和一条示例插件（`author_id` 取最早注册的 `profiles`）。不要重复执行，否则会重复条目。
