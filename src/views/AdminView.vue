@@ -79,6 +79,7 @@ onMounted(() => {
         <option value="plugin">插件</option>
         <option value="module">模块</option>
         <option value="branch">分支</option>
+        <option value="announcement">公告</option>
       </select>
       <select v-model="statusFilter">
         <option value="all">全部状态</option>

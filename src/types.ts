@@ -1,4 +1,4 @@
-/** 侧车插件（Remote），面向使用者的列表项 */
+/** 侧车插件（Remote），历史类型保留供文档引用 */
 export interface PluginListing {
   id: string
   name: string
@@ -9,86 +9,19 @@ export interface PluginListing {
   author: string
 }
 
-/** 角色包详情子页：场景 / 人设 / 身份 / 世界观 / 日程与生活 */
-export interface CharacterPackSections {
-  scene: string
-  persona: string
-  identity: string
-  world: string
-  /** 角色日程安排、日常生活节奏等 */
-  schedule: string
-}
-
-export type PackBranchKind = keyof CharacterPackSections
-
-/** 分支类型展示名（与上传、列表一致） */
-export const PACK_BRANCH_LABELS: Record<PackBranchKind, string> = {
-  scene: '场景',
-  persona: '人设',
-  identity: '自定义身份',
-  world: '世界观',
-  schedule: '日程与生活',
-}
-
-export const PACK_BRANCH_KINDS: PackBranchKind[] = ['scene', 'persona', 'identity', 'world', 'schedule']
-
-/** 模块组合页导出给「角色包编写器」粘贴的 JSON（version 1） */
-export type MarketComposeExportV1 = {
-  version: 1
-  source: 'oclive-plugin-market'
-  assembled: {
-    scene: string
-    persona: string
-    identity: string
-    world: string
-    schedule: string
-  }
-}
-
-/** 角色包单独分支素材（可用于自由组合） */
-export interface PackBranch {
-  id: string
-  name: string
-  kind: PackBranchKind
-  intro: string
-  content: string
-  preview_image: string
-  link: string
-  author: string
-}
-
-/** 角色包（图集入口，点进看详情） */
-export interface CharacterPack {
-  id: string
-  name: string
-  intro: string
-  preview_image: string
-  link: string
-  author: string
-  sections: CharacterPackSections
-}
-
-/** 可替换软件模块（记忆、情感等） */
-export interface SoftwareModule {
-  id: string
-  name: string
-  intro: string
-  preview_image: string
-  link: string
-  author: string
-  kind: string
-  tags: string[]
-}
-
-export interface SiteData {
-  character_packs: CharacterPack[]
-  plugins: PluginListing[]
-  modules: SoftwareModule[]
-  pack_branches: PackBranch[]
-}
-
-export type ContentType = 'character' | 'plugin' | 'module' | 'branch'
+export type ContentType = 'character' | 'plugin' | 'module' | 'branch' | 'announcement'
 export type ContentStatus = 'published' | 'hidden'
+
+/** 浏览页展示的资源类型（不含公告） */
+export const RESOURCE_TYPES: ContentType[] = ['character', 'plugin', 'module', 'branch']
+
+export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
+  character: '角色包',
+  plugin: '插件',
+  module: '模块',
+  branch: '分支',
+  announcement: '公告',
+}
 
 export interface ContentItem {
   id: string

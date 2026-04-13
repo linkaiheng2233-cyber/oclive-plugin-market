@@ -3,59 +3,10 @@ import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 import type { Session } from '@supabase/supabase-js'
 import AppHeader from './components/AppHeader.vue'
-import UploadDrawer from './components/UploadDrawer.vue'
 import { authContextKey } from './composables/useAuthContext'
-import { siteDataKey, siteErrorKey, siteLoadingKey } from './composables/useSiteData'
 import { getSupabaseClient } from './lib/supabase'
-import type { CharacterPack, ContentItem, PackBranch, PluginListing, Profile, SiteData, SoftwareModule } from './types'
+import type { Profile } from './types'
 
-type UploadPayload =
-  | {
-      kind: 'plugin'
-      name: string
-      author: string
-      link: string
-      intro: string
-      previewImage: string
-      tags: string[]
-      minVersion: string
-    }
-  | {
-      kind: 'pack'
-      name: string
-      author: string
-      link: string
-      intro: string
-      previewImage: string
-      sections: CharacterPack['sections']
-    }
-  | {
-      kind: 'pack-branch'
-      name: string
-      author: string
-      link: string
-      intro: string
-      previewImage: string
-      branchKind: PackBranch['kind']
-      content: string
-    }
-  | {
-      kind: 'module'
-      name: string
-      author: string
-      link: string
-      intro: string
-      previewImage: string
-      moduleKind: string
-      tags: string[]
-    }
-
-const BLOCKED_WORDS = ['血腥', '肢解', '虐杀', '强奸', '乱伦', '幼女', '幼男', '未成年色情', 'nude', 'rape']
-
-const siteData = ref<SiteData | null>(null)
-const loading = ref(true)
-const error = ref('')
-const uploadOpen = ref(false)
 const toast = ref('')
 
 const authBusy = ref(false)
@@ -70,9 +21,6 @@ const profile = ref<Profile | null>(null)
 const supabase = getSupabaseClient()
 authConfigured.value = !!supabase
 
-provide(siteDataKey, siteData)
-provide(siteLoadingKey, loading)
-provide(siteErrorKey, error)
 provide(authContextKey, {
   authConfigured,
   authBusy,
@@ -86,15 +34,6 @@ provide(authContextKey, {
   refreshProfile,
 })
 
-const LS_KEYS = {
-  plugins: 'oclive.local.plugins',
-  packs: 'oclive.local.packs',
-  modules: 'oclive.local.modules',
-  branches: 'oclive.local.packBranches',
-}
-
-let authSub: { unsubscribe: () => void } | null = null
-
 const adminEmails = computed(() => {
   const v = (import.meta.env.VITE_ADMIN_EMAILS || '').trim()
   if (!v) return [] as string[]
@@ -104,196 +43,11 @@ const adminEmails = computed(() => {
     .filter(Boolean)
 })
 
-function slugify(input: string) {
-  const s = input
-    .toLowerCase()
-    .replace(/[^a-z0-9\u4e00-\u9fa5]+/g, '-')
-    .replace(/(^-+|-+$)/g, '')
-  return s || `item-${Date.now()}`
-}
-
-function readLocalArray<T>(key: string): T[] {
-  try {
-    const raw = localStorage.getItem(key)
-    if (!raw) return []
-    const parsed = JSON.parse(raw) as unknown
-    return Array.isArray(parsed) ? (parsed as T[]) : []
-  } catch {
-    return []
-  }
-}
-
-function writeLocalArray<T>(key: string, values: T[]) {
-  localStorage.setItem(key, JSON.stringify(values))
-}
-
 function showToast(message: string) {
   toast.value = message
   window.setTimeout(() => {
     if (toast.value === message) toast.value = ''
   }, 2600)
-}
-
-function violatesContentPolicy(payload: UploadPayload) {
-  const text =
-    payload.kind === 'pack'
-      ? [
-          payload.name,
-          payload.intro,
-          payload.author,
-          payload.sections.scene,
-          payload.sections.persona,
-          payload.sections.identity,
-          payload.sections.world,
-          payload.sections.schedule,
-        ].join(' ')
-      : [payload.name, payload.intro, payload.author].join(' ')
-  const lower = text.toLowerCase()
-  return BLOCKED_WORDS.some((w) => lower.includes(w.toLowerCase()))
-}
-
-function itemToPack(item: ContentItem): CharacterPack {
-  const m = item.metadata || {}
-  return {
-    id: item.id,
-    name: item.title,
-    intro: item.description,
-    preview_image: (m.preview_image as string) || '',
-    link: item.download_url,
-    author: item.author_name || 'unknown',
-    sections: {
-      scene: (m.scene as string) || '',
-      persona: (m.persona as string) || '',
-      identity: (m.identity as string) || '',
-      world: (m.world as string) || '',
-      schedule: (m.schedule as string) || '',
-    },
-  }
-}
-
-function itemToPlugin(item: ContentItem): PluginListing {
-  const m = item.metadata || {}
-  return {
-    id: item.id,
-    name: item.title,
-    description: item.description,
-    repo_url: item.download_url,
-    min_oclive_version: (m.min_oclive_version as string) || '0.2.0',
-    tags: item.tags ?? [],
-    author: item.author_name || 'unknown',
-  }
-}
-
-function itemToModule(item: ContentItem): SoftwareModule {
-  const m = item.metadata || {}
-  return {
-    id: item.id,
-    name: item.title,
-    intro: item.description,
-    preview_image: (m.preview_image as string) || '',
-    link: item.download_url,
-    author: item.author_name || 'unknown',
-    kind: (m.kind as string) || 'custom',
-    tags: item.tags ?? [],
-  }
-}
-
-function itemToBranch(item: ContentItem): PackBranch {
-  const m = item.metadata || {}
-  const kind = (m.kind as PackBranch['kind']) || 'scene'
-  return {
-    id: item.id,
-    name: item.title,
-    kind,
-    intro: item.description,
-    content: (m.content as string) || '',
-    preview_image: (m.preview_image as string) || '',
-    link: item.download_url,
-    author: item.author_name || 'unknown',
-  }
-}
-
-async function fetchPublishedContent() {
-  if (!supabase) return [] as ContentItem[]
-  const { data, error } = await supabase
-    .from('content_items')
-    .select(
-      'id,type,title,description,tags,author_id,status,download_url,version,metadata,download_count,created_at,updated_at,last_published_at,profiles(username)'
-    )
-    .eq('status', 'published')
-    .order('last_published_at', { ascending: false })
-  if (error) {
-    showToast(`云端读取失败：${error.message}`)
-    return []
-  }
-  return (data ?? []).map((x) => {
-    const row = x as ContentItem & { profiles?: { username?: string } | null }
-    return { ...row, author_name: row.profiles?.username || '' }
-  })
-}
-
-/** 静态站点数据与 Supabase 列表互不依赖，并行请求以缩短首屏 */
-async function loadStaticSiteData(baseUrl: string): Promise<SiteData> {
-  let r = await fetch(`${baseUrl}data/site.json`)
-  if (r.ok) {
-    const base = (await r.json()) as SiteData
-    return {
-      ...base,
-      pack_branches: base.pack_branches ?? [],
-    }
-  }
-  r = await fetch(`${baseUrl}data/plugins.json`)
-  if (!r.ok) throw new Error(`无法加载 site.json 或 plugins.json（HTTP ${r.status}）`)
-  const j = (await r.json()) as { plugins: SiteData['plugins'] }
-  return {
-    character_packs: [],
-    plugins: j.plugins ?? [],
-    modules: [],
-    pack_branches: [],
-  }
-}
-
-async function load() {
-  loading.value = true
-  error.value = ''
-  try {
-    const baseUrl = import.meta.env.BASE_URL
-    const [baseData, cloudItems] = await Promise.all([loadStaticSiteData(baseUrl), fetchPublishedContent()])
-    siteData.value = baseData
-    if (!siteData.value) return
-    const cloudPacks = cloudItems.filter((x) => x.type === 'character').map(itemToPack)
-    const cloudPlugins = cloudItems.filter((x) => x.type === 'plugin').map(itemToPlugin)
-    const cloudModules = cloudItems.filter((x) => x.type === 'module').map(itemToModule)
-    const cloudBranches = cloudItems.filter((x) => x.type === 'branch').map(itemToBranch)
-
-    siteData.value.character_packs = [
-      ...cloudPacks,
-      ...readLocalArray<CharacterPack>(LS_KEYS.packs),
-      ...siteData.value.character_packs,
-    ]
-    siteData.value.plugins = [...cloudPlugins, ...readLocalArray<PluginListing>(LS_KEYS.plugins), ...siteData.value.plugins]
-    siteData.value.modules = [...cloudModules, ...readLocalArray<SoftwareModule>(LS_KEYS.modules), ...siteData.value.modules]
-    siteData.value.pack_branches = [
-      ...cloudBranches,
-      ...readLocalArray<PackBranch>(LS_KEYS.branches),
-      ...siteData.value.pack_branches,
-    ]
-
-    siteData.value.character_packs = siteData.value.character_packs.map((p) => ({
-      ...p,
-      sections: {
-        scene: p.sections?.scene ?? '',
-        persona: p.sections?.persona ?? '',
-        identity: p.sections?.identity ?? '',
-        world: p.sections?.world ?? '',
-        schedule: p.sections?.schedule ?? '',
-      },
-    }))
-  } catch (e) {
-    error.value = e instanceof Error ? e.message : String(e)
-  } finally {
-    loading.value = false
-  }
 }
 
 async function ensureProfile(session: Session | null) {
@@ -329,6 +83,8 @@ async function refreshProfile() {
   const mailAdmin = userEmail.value ? adminEmails.value.includes(userEmail.value.toLowerCase()) : false
   isAdmin.value = !!profile.value.is_admin || mailAdmin
 }
+
+let authSub: { unsubscribe: () => void } | null = null
 
 async function setupAuth() {
   if (!supabase) return
@@ -382,142 +138,7 @@ async function signOut() {
   showToast('已退出登录。')
 }
 
-async function submitToCloud(payload: UploadPayload) {
-  if (!supabase || !userId.value) return false
-  if (violatesContentPolicy(payload)) {
-    showToast('命中禁用词（血腥/暴力/色情），请修改后再发布。')
-    return true
-  }
-
-  const common = {
-    title: payload.name,
-    description: payload.intro,
-    author_id: userId.value,
-    status: 'published' as const,
-    download_url: payload.link,
-  }
-
-  let row: Omit<ContentItem, 'id' | 'author_name' | 'created_at' | 'updated_at' | 'download_count' | 'last_published_at'>
-  if (payload.kind === 'pack') {
-    row = {
-      ...common,
-      type: 'character',
-      tags: ['character'],
-      version: 'v1.0.0',
-      metadata: {
-        preview_image: payload.previewImage,
-        scene: payload.sections.scene,
-        persona: payload.sections.persona,
-        identity: payload.sections.identity,
-        world: payload.sections.world,
-        schedule: payload.sections.schedule,
-      },
-    }
-  } else if (payload.kind === 'plugin') {
-    row = {
-      ...common,
-      type: 'plugin',
-      tags: payload.tags,
-      version: payload.minVersion || 'v1.0.0',
-      metadata: { min_oclive_version: payload.minVersion || '0.2.0', preview_image: payload.previewImage },
-    }
-  } else if (payload.kind === 'module') {
-    row = {
-      ...common,
-      type: 'module',
-      tags: payload.tags,
-      version: 'v1.0.0',
-      metadata: { kind: payload.moduleKind || 'custom', preview_image: payload.previewImage },
-    }
-  } else {
-    row = {
-      ...common,
-      type: 'branch',
-      tags: [payload.branchKind],
-      version: 'v1.0.0',
-      metadata: { kind: payload.branchKind, content: payload.content, preview_image: payload.previewImage },
-    }
-  }
-
-  const { error: e } = await supabase.from('content_items').insert(row)
-  if (e) {
-    showToast(`云端提交失败：${e.message}`)
-    return true
-  }
-  showToast('内容已提交到云端。')
-  await load()
-  return true
-}
-
-function saveLocally(payload: UploadPayload) {
-  if (!siteData.value) return
-  if (payload.kind === 'plugin') {
-    const item: PluginListing = {
-      id: `plugin-${slugify(payload.name)}-${Date.now().toString(36)}`,
-      name: payload.name,
-      description: payload.intro,
-      repo_url: payload.link,
-      min_oclive_version: payload.minVersion || '0.2.0',
-      tags: payload.tags,
-      author: payload.author,
-    }
-    siteData.value.plugins.unshift(item)
-    writeLocalArray(LS_KEYS.plugins, siteData.value.plugins.filter((x) => x.id.startsWith('plugin-')))
-    return
-  }
-  if (payload.kind === 'pack') {
-    const item: CharacterPack = {
-      id: `pack-${slugify(payload.name)}-${Date.now().toString(36)}`,
-      name: payload.name,
-      intro: payload.intro,
-      preview_image: payload.previewImage,
-      link: payload.link,
-      author: payload.author,
-      sections: payload.sections,
-    }
-    siteData.value.character_packs.unshift(item)
-    writeLocalArray(LS_KEYS.packs, siteData.value.character_packs.filter((x) => x.id.startsWith('pack-')))
-    return
-  }
-  if (payload.kind === 'pack-branch') {
-    const item: PackBranch = {
-      id: `branch-${payload.branchKind}-${slugify(payload.name)}-${Date.now().toString(36)}`,
-      kind: payload.branchKind,
-      name: payload.name,
-      intro: payload.intro,
-      content: payload.content,
-      preview_image: payload.previewImage,
-      link: payload.link,
-      author: payload.author,
-    }
-    siteData.value.pack_branches.unshift(item)
-    writeLocalArray(LS_KEYS.branches, siteData.value.pack_branches.filter((x) => x.id.startsWith('branch-')))
-    return
-  }
-  const item: SoftwareModule = {
-    id: `module-${slugify(payload.name)}-${Date.now().toString(36)}`,
-    name: payload.name,
-    intro: payload.intro,
-    preview_image: payload.previewImage,
-    link: payload.link,
-    author: payload.author,
-    kind: payload.moduleKind || 'custom',
-    tags: payload.tags,
-  }
-  siteData.value.modules.unshift(item)
-  writeLocalArray(LS_KEYS.modules, siteData.value.modules.filter((x) => x.id.startsWith('module-')))
-}
-
-async function onSubmit(payload: UploadPayload) {
-  if (!siteData.value) return
-  const cloudHandled = await submitToCloud(payload)
-  if (cloudHandled) return
-  saveLocally(payload)
-  showToast('未连接云端，已保存到本地浏览器。')
-}
-
 onMounted(() => {
-  void load()
   void setupAuth()
 })
 
@@ -534,19 +155,7 @@ onUnmounted(() => {
       :is-authed="!!userId"
       :avatar-url="avatarUrl"
       :username="username"
-      @open-upload="uploadOpen = true"
     />
-    <UploadDrawer
-      :open="uploadOpen"
-      :auth-configured="authConfigured"
-      :user-email="userEmail"
-      :auth-busy="authBusy"
-      @close="uploadOpen = false"
-      @submit="onSubmit"
-      @login="signInWithEmail"
-      @logout="signOut"
-    />
-
     <main id="main" class="main">
       <p v-if="toast" class="toast" role="status">{{ toast }}</p>
       <router-view />
@@ -556,6 +165,8 @@ onUnmounted(() => {
       <p>
         <RouterLink to="/versions">软件版本与下载</RouterLink>
         ·
+        <RouterLink to="/announcements">公告</RouterLink>
+        ·
         文档：
         <a
           href="https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md"
@@ -564,7 +175,7 @@ onUnmounted(() => {
           >PLUGIN_WEB_SECTION</a
         >
       </p>
-      <p class="muted">OCLive 市场 · 静态站点</p>
+      <p class="muted">OCLive 社区站</p>
     </footer>
   </div>
 </template>

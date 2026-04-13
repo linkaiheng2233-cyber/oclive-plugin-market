@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { PACK_BRANCH_KINDS } from '../types'
+import { useRoute } from 'vue-router'
+import { RouterLink } from 'vue-router'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -9,53 +8,22 @@ const props = defineProps<{
   avatarUrl: string
   username: string
 }>()
-const emit = defineEmits<{ openUpload: [] }>()
 
-const router = useRouter()
 const current = useRoute()
-const qLocal = ref('')
-
-watch(
-  () => current.query.q,
-  (q) => {
-    qLocal.value = typeof q === 'string' ? q : ''
-  },
-  { immediate: true }
-)
 
 const nav = [
-  { to: '/', label: '主页' },
-  { to: '/packs', label: '角色包', matchPrefix: '/packs' },
-  { to: '/plugins', label: '插件' },
-  { to: '/modules', label: '模块' },
-  { to: '/versions', label: '版本下载' },
-  { to: '/me', label: '个人设置' },
-  { to: '/manage', label: '我的上传' },
+  { to: '/', label: '主页', exact: true },
+  { to: '/browse', label: '浏览', matchPrefix: '/browse' },
+  { to: '/announcements', label: '公告', matchPrefix: '/announcements' },
+  { to: '/submit', label: '发布', matchPrefix: '/submit' },
+  { to: '/versions', label: '版本下载', matchPrefix: '/versions' },
+  { to: '/manage', label: '我的上传', matchPrefix: '/manage' },
+  { to: '/me', label: '个人设置', matchPrefix: '/me' },
 ]
 
-function branchFilterQuery(): Record<string, string> {
-  const out: Record<string, string> = {}
-  for (const k of PACK_BRANCH_KINDS) {
-    const v = current.query[k]
-    const s = typeof v === 'string' ? v.trim() : Array.isArray(v) && typeof v[0] === 'string' ? v[0].trim() : ''
-    if (s) out[k] = s
-  }
-  return out
-}
-
-function goSearch() {
-  const q = qLocal.value.trim()
-  const next: Record<string, string> = { ...branchFilterQuery() }
-  if (q) next.q = q
-  router.push({ name: 'search', query: Object.keys(next).length ? next : {} })
-}
-
-const onSearchPage = computed(() => current.name === 'search')
-
-function navActive(to: string, matchPrefix?: string) {
+function navActive(to: string, exact?: boolean, matchPrefix?: string) {
   if (matchPrefix) return current.path.startsWith(matchPrefix)
-  if (to === '/') return current.name === 'home'
-  if (to === '/versions') return current.name === 'versions'
+  if (exact) return current.name === 'home' || current.path === '/'
   return current.path === to || current.path.startsWith(`${to}/`)
 }
 </script>
@@ -66,7 +34,7 @@ function navActive(to: string, matchPrefix?: string) {
       <div class="left">
         <RouterLink to="/" class="brand">
           <span class="logo" aria-hidden="true">◇</span>
-          <span class="brand-text">OCLive 市场</span>
+          <span class="brand-text">OCLive 社区</span>
         </RouterLink>
         <nav class="nav" aria-label="主导航">
           <RouterLink
@@ -76,27 +44,11 @@ function navActive(to: string, matchPrefix?: string) {
             class="nav-link"
             active-class=""
             exact-active-class=""
-            :class="{ 'nav-link--active': navActive(n.to, n.matchPrefix) }"
+            :class="{ 'nav-link--active': navActive(n.to, n.exact, n.matchPrefix) }"
           >
             {{ n.label }}
           </RouterLink>
         </nav>
-      </div>
-
-      <div class="search-wrap">
-        <label class="sr-only" for="global-search">全站搜索</label>
-        <input
-          id="global-search"
-          v-model="qLocal"
-          type="search"
-          class="search"
-          placeholder="搜索角色包、插件、模块…"
-          autocomplete="off"
-          @keydown.enter.prevent="goSearch"
-        />
-        <button type="button" class="search-btn" @click="goSearch">
-          {{ onSearchPage ? '更新' : '搜索' }}
-        </button>
       </div>
 
       <div class="right">
@@ -105,7 +57,7 @@ function navActive(to: string, matchPrefix?: string) {
           <img v-if="props.avatarUrl" :src="props.avatarUrl" alt="avatar" class="avatar" />
           <span v-else class="avatar-fallback">{{ props.username?.slice(0, 1) || 'U' }}</span>
         </RouterLink>
-        <button type="button" class="upload-btn" @click="emit('openUpload')">上传</button>
+        <RouterLink to="/submit" class="cta">发布资源</RouterLink>
       </div>
     </div>
   </header>
@@ -125,28 +77,19 @@ function navActive(to: string, matchPrefix?: string) {
   max-width: 1120px;
   margin: 0 auto;
   padding: 10px 18px;
-  display: grid;
-  gap: 12px 14px;
-  grid-template-columns: 1fr auto;
-  grid-template-areas:
-    'brandnav upload'
-    'search search';
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-}
-
-@media (min-width: 900px) {
-  .header-inner {
-    grid-template-columns: auto 1fr auto;
-    grid-template-areas: 'brandnav search upload';
-  }
+  justify-content: space-between;
+  gap: 12px 16px;
 }
 
 .left {
-  grid-area: brandnav;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px 18px;
+  min-width: 0;
 }
 
 .brand {
@@ -158,6 +101,7 @@ function navActive(to: string, matchPrefix?: string) {
   color: var(--fg);
   text-decoration: none;
   font-size: 1.02rem;
+  flex-shrink: 0;
 }
 
 .logo {
@@ -169,8 +113,8 @@ function navActive(to: string, matchPrefix?: string) {
 .nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 14px;
-  font-size: 0.88rem;
+  gap: 6px 12px;
+  font-size: 0.86rem;
 }
 
 .nav-link {
@@ -189,62 +133,11 @@ function navActive(to: string, matchPrefix?: string) {
   font-weight: 600;
 }
 
-.search-wrap {
-  grid-area: search;
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-  min-width: 0;
-  max-width: 560px;
-  width: 100%;
-}
-
-@media (min-width: 900px) {
-  .search-wrap {
-    justify-self: stretch;
-    max-width: none;
-  }
-}
-
-.search {
-  flex: 1;
-  min-width: 0;
-  padding: 9px 12px;
-  font-size: 0.95rem;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface-2);
-  color: var(--fg);
-}
-
-.search:focus {
-  outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
-  outline-offset: 1px;
-}
-
-.search-btn {
-  flex-shrink: 0;
-  padding: 9px 14px;
-  font-size: 0.88rem;
-  font-weight: 600;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--fg-muted);
-  cursor: pointer;
-}
-
-.search-btn:hover {
-  border-color: var(--accent-soft);
-  color: var(--accent);
-}
-
 .right {
-  grid-area: upload;
-  justify-self: end;
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .admin-link {
@@ -283,31 +176,19 @@ function navActive(to: string, matchPrefix?: string) {
   color: var(--fg-soft);
 }
 
-.upload-btn {
+.cta {
   padding: 9px 16px;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
   border: none;
   border-radius: 999px;
   background: var(--accent);
   color: var(--accent-fg);
-  cursor: pointer;
+  text-decoration: none;
   white-space: nowrap;
 }
 
-.upload-btn:hover {
+.cta:hover {
   filter: brightness(1.03);
-}
-
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
 }
 </style>

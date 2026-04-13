@@ -2,7 +2,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
-import type { ContentItem, ContentStatus, ContentType } from '../types'
+import { CONTENT_TYPE_LABELS, type ContentItem, type ContentStatus, type ContentType } from '../types'
 
 const supabase = getSupabaseClient()
 const { userId, userEmail } = useAuthContext()
@@ -134,6 +134,9 @@ onMounted(() => {
       <button class="tab" :class="{ active: typeFilter === 'plugin' }" @click="typeFilter = 'plugin'">插件</button>
       <button class="tab" :class="{ active: typeFilter === 'module' }" @click="typeFilter = 'module'">模块</button>
       <button class="tab" :class="{ active: typeFilter === 'branch' }" @click="typeFilter = 'branch'">分支</button>
+      <button class="tab" :class="{ active: typeFilter === 'announcement' }" @click="typeFilter = 'announcement'">
+        公告
+      </button>
     </div>
 
     <p v-if="loading" class="state">加载中...</p>
@@ -144,7 +147,7 @@ onMounted(() => {
           <p class="title">{{ item.title }}</p>
           <p class="desc">{{ item.description }}</p>
           <p class="tiny">
-            {{ item.type }} · {{ item.version }} ·
+            {{ CONTENT_TYPE_LABELS[item.type] }} · {{ item.version }} ·
             <span :class="item.status === 'published' ? 'ok' : 'warn'">{{ item.status }}</span>
           </p>
         </div>

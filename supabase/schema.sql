@@ -11,7 +11,7 @@ create table if not exists public.profiles (
 
 create table if not exists public.content_items (
   id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('character', 'plugin', 'module', 'branch')),
+  type text not null check (type in ('character', 'plugin', 'module', 'branch', 'announcement')),
   title text not null,
   description text not null,
   tags text[] not null default '{}',
@@ -119,7 +119,16 @@ create policy "authors can insert content"
   on public.content_items
   for insert
   to authenticated
-  with check (auth.uid() = author_id);
+  with check (
+    auth.uid() = author_id
+    and (
+      type is distinct from 'announcement'
+      or exists (
+        select 1 from public.profiles p
+        where p.id = auth.uid() and p.is_admin = true
+      )
+    )
+  );
 
 drop policy if exists "authors or admin can update content" on public.content_items;
 create policy "authors or admin can update content"
