@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
 
@@ -10,6 +10,49 @@ const { authConfigured, authBusy, userId, userEmail, username, avatarUrl, signIn
 const emailInput = ref('')
 const nameInput = ref('')
 const info = ref('')
+const profileReady = ref(false)
+
+/** 登录后若没有 profiles 行（例如早期触发器失败、昵称唯一冲突），补一行，否则更新会「静默失败」 */
+async function ensureProfileRow() {
+  profileReady.value = false
+  if (!supabase || !userId.value) return
+  const { data: row, error: qErr } = await supabase.from('profiles').select('id').eq('id', userId.value).maybeSingle()
+  if (qErr) {
+    toast(qErr.message)
+    return
+  }
+  if (row) {
+    profileReady.value = true
+    return
+  }
+  const inferred = userEmail.value?.split('@')[0] || `user_${userId.value.slice(0, 8)}`
+  const suffix = userId.value.replace(/-/g, '').slice(0, 8)
+  const { error: iErr } = await supabase.from('profiles').insert({
+    id: userId.value,
+    username: `${inferred}_${suffix}`,
+    avatar_url: '',
+  })
+  if (iErr) {
+    toast(`资料行创建失败：${iErr.message}（若提示昵称重复，可在 Supabase Table Editor 里手动改 profiles）`)
+    return
+  }
+  await refreshProfile()
+  profileReady.value = true
+}
+
+watch(
+  [userId, username],
+  () => {
+    if (userId.value) {
+      nameInput.value = username.value || ''
+      void ensureProfileRow()
+    } else {
+      nameInput.value = ''
+      profileReady.value = false
+    }
+  },
+  { immediate: true }
+)
 
 function toast(msg: string) {
   info.value = msg
@@ -18,17 +61,31 @@ function toast(msg: string) {
   }, 2200)
 }
 
+function friendlyDbError(err: { message: string; code?: string }) {
+  if (err.code === '23505' || err.message.includes('duplicate key') || err.message.includes('unique')) {
+    return '这个昵称已经被人用了，换一个试试～'
+  }
+  return err.message
+}
+
 async function saveName() {
-  if (!supabase || !userId.value || !nameInput.value.trim()) return
-  const { error } = await supabase
+  const next = nameInput.value.trim()
+  if (!supabase || !userId.value || !next) return
+  const { data, error } = await supabase
     .from('profiles')
-    .update({ username: nameInput.value.trim() })
+    .update({ username: next })
     .eq('id', userId.value)
+    .select('id')
   if (error) {
-    toast(error.message)
+    toast(friendlyDbError(error))
+    return
+  }
+  if (!data?.length) {
+    toast('没有更新成功：库里可能没有你的资料行，请刷新页面或看下方说明。')
     return
   }
   await refreshProfile()
+  nameInput.value = username.value || next
   toast('昵称已更新。')
 }
 
@@ -76,17 +133,29 @@ async function onAvatarChange(e: Event) {
   const file = input.files?.[0]
   if (!file) return
   try {
+    await ensureProfileRow()
+    if (!profileReady.value) throw new Error('资料未就绪，请稍后再试或刷新页面。')
     if (file.size > 16 * 1024 * 1024) throw new Error('图片过大（>16MB）')
     const blob = await fileToCircleBlob(file)
     const path = `${userId.value}/avatar.jpg`
     const { error: upErr } = await supabase.storage
       .from('avatars')
       .upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
-    if (upErr) throw upErr
+    if (upErr) {
+      if (upErr.message.includes('Bucket not found') || upErr.message.includes('not found')) {
+        throw new Error('头像存储桶未创建：请在 Supabase 执行 schema.sql 里 storage 段，或 Storage 里新建公开桶 avatars')
+      }
+      throw upErr
+    }
     const { data } = supabase.storage.from('avatars').getPublicUrl(path)
     const publicUrl = `${data.publicUrl}?t=${Date.now()}`
-    const { error: dbErr } = await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId.value)
+    const { data: upd, error: dbErr } = await supabase
+      .from('profiles')
+      .update({ avatar_url: publicUrl })
+      .eq('id', userId.value)
+      .select('id')
     if (dbErr) throw dbErr
+    if (!upd?.length) throw new Error('头像地址没写进资料表：请确认 profiles 里有你的账号行。')
     await refreshProfile()
     toast('头像已更新。')
   } catch (err) {
@@ -130,8 +199,9 @@ async function onAvatarChange(e: Event) {
       <span>修改昵称</span>
       <input v-model="nameInput" placeholder="新的昵称" />
     </label>
+    <p v-if="userId && !profileReady" class="hint">正在同步资料…</p>
     <div class="ops">
-      <button :disabled="!nameInput" @click="saveName">保存昵称</button>
+      <button :disabled="!nameInput.trim() || !profileReady" @click="saveName">保存昵称</button>
       <label class="upload">
         选择头像
         <input type="file" accept="image/*" @change="onAvatarChange" />
@@ -229,5 +299,10 @@ button,
 }
 .ghost {
   color: var(--fg-muted);
+}
+.hint {
+  font-size: 0.85rem;
+  color: var(--fg-soft);
+  margin: 0 0 8px;
 }
 </style>
