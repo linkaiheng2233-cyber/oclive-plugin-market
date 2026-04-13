@@ -26,4 +26,4 @@
 
 **告示常用操作（复制到 SQL Editor 执行）**见 [`announcements/OPERATIONS.md`](announcements/OPERATIONS.md)。
 
-沐沐语气开发计划：`announcements/2026-04-09_dev_plugins_and_security_mumu.sql`。默认 **方案 A**（取最早一条 `profiles` 作为 `author_id`）。该文件已「同标题先删再插」，重复执行一般不会叠多条同标题。
+沐沐语气公告脚本（均在 SQL Editor 全选执行）：**开发计划** `announcements/2026-04-09_dev_plugins_and_security_mumu.sql`、**创作者指路** `announcements/2026-04-13_creator_guide_mumu.sql`。默认取最早一条 `profiles` 为 `author_id`；均已「同标题先删再插」，重复执行一般不会叠多条同标题。常用操作汇总见 `announcements/OPERATIONS.md`。

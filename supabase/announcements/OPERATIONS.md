@@ -36,7 +36,7 @@ delete from public.content_items
 where type = 'announcement';
 ```
 
-清完后若要沐沐那条，再执行下面 **第 8 节** 或打开 `2026-04-09_dev_plugins_and_security_mumu.sql` 全选执行一次。
+清完后若要补回沐沐公告，再执行下面 **第 8、9 节**（或打开对应 `.sql` 全选执行一次）。
 
 ---
 
@@ -58,14 +58,22 @@ where c.type = 'announcement'
 
 ---
 
-## 5. 只删掉「沐沐的小喇叭…」同标题的旧行（其它标题的公告保留）
+## 5. 只删掉某一标题下的旧公告（其它标题保留）
 
-适合叠了很多条**同一标题**的沐沐公告；与 `2026-04-09_dev_plugins_and_security_mumu.sql` 开头的删除逻辑一致。
+**开发计划那条**（与 `2026-04-09_dev_plugins_and_security_mumu.sql` 一致）：
 
 ```sql
 delete from public.content_items
 where type = 'announcement'
   and title = '沐沐的小喇叭：接下来要忙插件和角色包啦';
+```
+
+**创作者指路那条**（与 `2026-04-13_creator_guide_mumu.sql` 一致）：
+
+```sql
+delete from public.content_items
+where type = 'announcement'
+  and title = '沐沐的小喇叭：给创作者指个路';
 ```
 
 ---
@@ -94,13 +102,19 @@ where type = 'announcement'
 
 ---
 
-## 8. 插入（或更新）沐沐那条开发计划公告
+## 8. 插入（或更新）沐沐「开发计划」公告
 
 正文、标题以仓库里的脚本为准；脚本会先 **删同标题** 再 **插入**，重复执行一般不会叠出多条同标题。
 
-请打开同目录文件 **`2026-04-09_dev_plugins_and_security_mumu.sql`**，**全选复制**到 SQL Editor 执行整段（不要只复制一半）。
+请打开 **`2026-04-09_dev_plugins_and_security_mumu.sql`**，**全选复制**到 SQL Editor 执行整段（不要只复制一半）。
 
 若你坚持用「仅管理员」当 `author_id`，按该文件里的说明改用方案 B。
+
+---
+
+## 9. 插入（或更新）沐沐「创作者指路」公告
+
+打开 **`2026-04-13_creator_guide_mumu.sql`**，**全选复制**到 SQL Editor 执行整段。与第 8 节相同：先删同标题再插入，可安全重复执行。
 
 ---
 
@@ -108,7 +122,8 @@ where type = 'announcement'
 
 | 文件 | 作用 |
 |------|------|
-| `2026-04-09_dev_plugins_and_security_mumu.sql` | 沐沐公告：同标题先删再插 + 插入 |
+| `2026-04-09_dev_plugins_and_security_mumu.sql` | 沐沐 · 开发计划：同标题先删再插 + 插入 |
+| `2026-04-13_creator_guide_mumu.sql` | 沐沐 · 创作者指路：同标题先删再插 + 插入 |
 | `clear_all_announcements.sql` | 等同上面 **第 3 节** |
 | `keep_latest_announcement_only.sql` | 等同上面 **第 4 节** |
 | `cleanup_duplicate_announcements.sql` | 查询 + 注释掉的按 id / 只留最新示例 |

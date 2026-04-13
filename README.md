@@ -48,7 +48,7 @@ VITE_ADMIN_EMAILS=你的邮箱@example.com
 
 ### 演示数据（可选）
 
-站内衣案默认使用 **沐沐语气**（与主项目示例角色「沐沐」一致，见 `src/content/mumuCopy.ts`）。若数据库里还没有内容，可在登录过一次后，于 Supabase SQL Editor 执行 `supabase/seed_demo_mumu.sql`，插入欢迎公告与示例插件（详见 `supabase/README.md`）。开发计划类公告见 `supabase/announcements/2026-04-09_dev_plugins_and_security_mumu.sql`（需管理员 `is_admin`）。
+站内衣案默认使用 **沐沐语气**（与主项目示例角色「沐沐」一致，见 `src/content/mumuCopy.ts`）。若数据库里还没有内容，可在登录过一次后，于 Supabase SQL Editor 执行 `supabase/seed_demo_mumu.sql`，插入欢迎公告与示例插件（详见 `supabase/README.md`）。沐沐语气公告脚本（开发计划、创作者指路等）见 `supabase/README.md` 与 `supabase/announcements/OPERATIONS.md`。
 
 ## 构建与部署
 
