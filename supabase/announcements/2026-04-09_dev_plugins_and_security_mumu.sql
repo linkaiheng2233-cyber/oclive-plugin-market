@@ -28,6 +28,7 @@ limit 1;
 
 -- 执行后在 SQL Editor 跑下面这句，确认是否多了一条公告（应看到新标题）：
 -- select id, title, created_at from public.content_items where type = 'announcement' order by created_at desc limit 5;
+-- 重复了要删旧行：见同目录 cleanup_duplicate_announcements.sql（按 id 删，或「只留最新一条」）。
 
 -- ========== 方案 B（仅当存在管理员时插入；否则 0 行）==========
 -- insert into public.content_items (
