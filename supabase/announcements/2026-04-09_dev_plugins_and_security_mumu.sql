@@ -2,6 +2,11 @@
 -- 在 Supabase SQL Editor 执行时一般为 postgres 角色，会绕过 RLS；author_id 取「任意一条」profiles 即可插入。
 -- 若你坚持用 is_admin 当作者，把下面「方案 A」整段注释掉，改用「方案 B」。
 
+-- 同标题先删再插：重复执行本文件不会叠多条「沐沐的小喇叭…」（其它标题的公告不受影响）
+delete from public.content_items
+where type = 'announcement'
+  and title = '沐沐的小喇叭：接下来要忙插件和角色包啦';
+
 -- ========== 方案 A（推荐：不依赖 is_admin，避免 0 行插入）==========
 insert into public.content_items (
   type, title, description, tags, author_id, status, download_url, version, metadata
@@ -26,9 +31,9 @@ from public.profiles p
 order by p.created_at asc
 limit 1;
 
--- 执行后在 SQL Editor 跑下面这句，确认是否多了一条公告（应看到新标题）：
+-- 执行后可自查：
 -- select id, title, created_at from public.content_items where type = 'announcement' order by created_at desc limit 5;
--- 重复了要删旧行：见同目录 cleanup_duplicate_announcements.sql（按 id 删，或「只留最新一条」）。
+-- 其它标题叠了或要「全库只留最新一条」：见 cleanup_duplicate_announcements.sql、keep_latest_announcement_only.sql。
 
 -- ========== 方案 B（仅当存在管理员时插入；否则 0 行）==========
 -- insert into public.content_items (

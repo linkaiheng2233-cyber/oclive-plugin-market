@@ -1,5 +1,6 @@
 -- 公告去重 / 删旧留新（在 Supabase SQL Editor 以 postgres 执行，绕过 RLS）
--- 每次跑「插入公告」脚本都会新增一行，不会自动覆盖旧行。
+-- 沐沐那条（2026-04-09_dev_plugins_and_security_mumu.sql）已「同标题先删再插」，一般不会再叠同标题。
+-- 其它公告或历史脏数据仍可用下面语句处理。
 
 -- 1) 先看有哪些公告（记下要删的 id，或确认要留哪一条）
 select id, title, created_at
