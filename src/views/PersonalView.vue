@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import AvatarImg from '../components/AvatarImg.vue'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
 
@@ -186,7 +187,7 @@ async function onAvatarChange(e: Event) {
   <section v-else class="card">
     <div class="top">
       <div class="avatar-wrap">
-        <img v-if="avatarUrl" :src="avatarUrl" alt="avatar" class="avatar" />
+        <AvatarImg v-if="avatarUrl" :stored-url="avatarUrl" img-class="avatar" />
         <div v-else class="avatar placeholder">{{ username.slice(0, 1) || 'U' }}</div>
       </div>
       <div>

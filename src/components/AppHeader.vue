@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
+import AvatarImg from './AvatarImg.vue'
 import { mumu } from '../content/mumuCopy'
 
 const props = defineProps<{
@@ -55,7 +56,7 @@ function navActive(to: string, exact?: boolean, matchPrefix?: string) {
       <div class="right">
         <RouterLink v-if="props.isAdmin" to="/admin" class="admin-link">管理</RouterLink>
         <RouterLink v-if="props.isAuthed" to="/me" class="avatar-link" title="个人设置">
-          <img v-if="props.avatarUrl" :src="props.avatarUrl" alt="avatar" class="avatar" />
+          <AvatarImg v-if="props.avatarUrl" :stored-url="props.avatarUrl" img-class="avatar" />
           <span v-else class="avatar-fallback">{{ props.username?.slice(0, 1) || 'U' }}</span>
         </RouterLink>
         <RouterLink to="/submit" class="cta">发布资源</RouterLink>
