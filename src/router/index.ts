@@ -18,6 +18,17 @@ const router = createRouter({
     { path: '/manage', name: 'manage', component: () => import('../views/ManageView.vue') },
     { path: '/admin', name: 'admin', component: () => import('../views/AdminView.vue') },
     { path: '/versions', name: 'versions', component: () => import('../views/VersionsView.vue') },
+    { path: '/docs', redirect: '/docs/creator' },
+    {
+      path: '/docs/creator',
+      name: 'docs-creator-index',
+      component: () => import('../views/CreatorDocsIndex.vue'),
+    },
+    {
+      path: '/docs/creator/:slug',
+      name: 'docs-creator-page',
+      component: () => import('../views/CreatorDocPage.vue'),
+    },
   ],
   scrollBehavior() {
     return { top: 0 }

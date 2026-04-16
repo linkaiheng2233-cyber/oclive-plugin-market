@@ -24,7 +24,7 @@ select
 - **角色包编辑**：用独立仓库 **oclive-pack-editor** 导出 zip；包的 **manifest / settings** 以主仓 **`roles/README_MANIFEST.md`** 和 **`creator-docs/role-pack/`** 为准。
 - **HTTP 侧车与 JSON-RPC 协议**：主仓 **`creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md`**（本市场仓库 README 顶部也有链过去）。
 
-发资源还是老规矩：**链接谁挂的谁负责**，点下载前多看一眼对方仓库说明～
+发资源还是老规矩：**链接挂了的要负责哦**，点下载前要多看一眼对方仓库说明哦～
 
 我去继续填架子啦，有问题欢迎去主仓或各工具仓库提 issue。',
   array['沐沐', '公告', '创作者']::text[],

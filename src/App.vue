@@ -168,6 +168,8 @@ onUnmounted(() => {
         ·
         <RouterLink to="/announcements">公告</RouterLink>
         ·
+        <RouterLink to="/docs/creator">创作者文档</RouterLink>
+        ·
         文档：
         <a
           href="https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md"

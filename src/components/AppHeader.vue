@@ -16,6 +16,7 @@ const current = useRoute()
 const nav = [
   { to: '/', label: '主页', exact: true },
   { to: '/browse', label: '浏览', matchPrefix: '/browse' },
+  { to: '/docs/creator', label: '创作者文档', matchPrefix: '/docs/creator' },
   { to: '/announcements', label: '公告', matchPrefix: '/announcements' },
   { to: '/submit', label: '发布', matchPrefix: '/submit' },
   { to: '/versions', label: '版本下载', matchPrefix: '/versions' },
