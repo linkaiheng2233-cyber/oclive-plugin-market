@@ -21,6 +21,16 @@ const cards = [
     desc: '编写器与主程序 0.2.x 搭配建议与升级提示。',
     to: '/docs/creator/compatibility',
   },
+  {
+    title: '插件插槽与快捷键',
+    desc: '官方槽名、多外观、市场条目可选展示字段；与主程序 creator-docs 对齐。',
+    to: '/docs/creator/plugin-slots-hotkeys',
+  },
+  {
+    title: '插件市场与客户端安装',
+    desc: 'metadata.git、oclive:// 协议、索引 JSON 与客户端默认源、兜底下载链接。',
+    to: '/docs/creator/plugin-market',
+  },
 ] as const
 </script>
 
