@@ -5,6 +5,11 @@ import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { mumu } from '../content/mumuCopy'
 import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
+import {
+  gitUrlFromContentMetadata,
+  ocliveInstallHref,
+  OCLIVE_CLIENT_RELEASE_LATEST,
+} from '../lib/ocliveProtocol'
 
 const props = defineProps<{ id: string }>()
 
@@ -17,6 +22,17 @@ const isAnnouncement = computed(() => item.value?.type === 'announcement')
 const showDownload = computed(
   () => item.value && !isAnnouncement.value && (item.value.download_url?.trim()?.length ?? 0) > 0
 )
+
+const pluginGitUrl = computed(() =>
+  item.value?.type === 'plugin' ? gitUrlFromContentMetadata(item.value.metadata) : null
+)
+const showOcliveInstall = computed(() => (pluginGitUrl.value?.length ?? 0) > 0)
+
+function openInOcliveClient() {
+  const g = pluginGitUrl.value
+  if (!g) return
+  window.location.href = ocliveInstallHref(g)
+}
 
 async function load() {
   const id = props.id
@@ -77,11 +93,30 @@ function openDownload() {
         {{ item.description }}
       </section>
 
+      <div v-if="showOcliveInstall" class="dl oclive-row">
+        <button type="button" class="btn btn-oclive" @click="openInOcliveClient">
+          在 Oclive 客户端安装
+        </button>
+        <a
+          class="link-fallback"
+          :href="OCLIVE_CLIENT_RELEASE_LATEST"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          未取得 oclive:// 协议？前往 GitHub 最新版
+        </a>
+        <p class="hint">使用索引中的 <code>metadata.git</code> 作为 Git 源（非 download_url）。</p>
+      </div>
       <div v-if="showDownload" class="dl">
         <button type="button" class="btn" @click="openDownload">下载</button>
         <p class="hint">{{ mumu.dlHint }}</p>
       </div>
-      <div v-else-if="isAnnouncement" class="note">{{ mumu.detailNoDlAnnouncement }}</div>
+      <div
+        v-if="isAnnouncement && !showDownload && !showOcliveInstall"
+        class="note"
+      >
+        {{ mumu.detailNoDlAnnouncement }}
+      </div>
     </article>
   </div>
 </template>
@@ -164,5 +199,22 @@ function openDownload() {
   margin-top: 16px;
   font-size: 0.9rem;
   color: var(--fg-muted);
+}
+.oclive-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.btn-oclive {
+  background: color-mix(in srgb, var(--accent) 92%, #000);
+}
+.link-fallback {
+  font-size: 0.88rem;
+  color: var(--accent);
+  text-decoration: none;
+}
+.link-fallback:hover {
+  text-decoration: underline;
 }
 </style>
