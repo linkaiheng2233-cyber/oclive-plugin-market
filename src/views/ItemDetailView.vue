@@ -7,8 +7,9 @@ import { mumu } from '../content/mumuCopy'
 import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
 import {
   gitUrlFromContentMetadata,
-  ocliveInstallHref,
+  ocliveInstallHrefFromGit,
   OCLIVE_CLIENT_RELEASE_LATEST,
+  pluginIndexUrlFromEnv,
 } from '../lib/ocliveProtocol'
 
 const props = defineProps<{ id: string }>()
@@ -27,11 +28,12 @@ const pluginGitUrl = computed(() =>
   item.value?.type === 'plugin' ? gitUrlFromContentMetadata(item.value.metadata) : null
 )
 const showOcliveInstall = computed(() => (pluginGitUrl.value?.length ?? 0) > 0)
+const pluginIndexUrl = pluginIndexUrlFromEnv()
 
 function openInOcliveClient() {
   const g = pluginGitUrl.value
   if (!g) return
-  window.location.href = ocliveInstallHref(g)
+  window.location.href = ocliveInstallHrefFromGit(g)
 }
 
 async function load() {
@@ -105,7 +107,14 @@ function openDownload() {
         >
           未取得 oclive:// 协议？前往 GitHub 最新版
         </a>
-        <p class="hint">使用索引中的 <code>metadata.git</code> 作为 Git 源（非 download_url）。</p>
+        <p class="hint">
+          使用 <code>metadata.git</code> 作为 Git 源（非 download_url）。协议：
+          <code>oclive://install?plugin=…</code>
+          <template v-if="pluginIndexUrl">
+            ·
+            <a :href="pluginIndexUrl" target="_blank" rel="noopener noreferrer">索引 JSON</a>
+          </template>
+        </p>
       </div>
       <div v-if="showDownload" class="dl">
         <button type="button" class="btn" @click="openDownload">下载</button>
@@ -194,6 +203,13 @@ function openDownload() {
   font-size: 0.82rem;
   color: var(--fg-soft);
   max-width: 48ch;
+}
+.hint a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.hint a:hover {
+  text-decoration: underline;
 }
 .note {
   margin-top: 16px;

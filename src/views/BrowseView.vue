@@ -5,6 +5,7 @@ import { mumu } from '../content/mumuCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { CONTENT_TYPE_LABELS, type ContentItem, type ContentType, RESOURCE_TYPES } from '../types'
+import { pluginIndexUrlFromEnv } from '../lib/ocliveProtocol'
 
 const supabase = getSupabaseClient()
 
@@ -14,6 +15,8 @@ const items = ref<ContentItem[]>([])
 const typeFilter = ref<'all' | ContentType>('all')
 const searchQuery = ref('')
 const sortMode = ref<'newest' | 'oldest' | 'title'>('newest')
+
+const pluginIndexUrl = pluginIndexUrlFromEnv()
 
 const byType = computed(() => {
   if (typeFilter.value === 'all') return items.value
@@ -79,6 +82,9 @@ function formatTime(iso: string) {
     <header class="head">
       <h1>{{ mumu.browseTitle }}</h1>
       <p class="sub">{{ mumu.browseSub }}</p>
+      <p v-if="pluginIndexUrl" class="index-link">
+        <a :href="pluginIndexUrl" target="_blank" rel="noopener noreferrer">插件索引 JSON（与客户端同源）</a>
+      </p>
     </header>
 
     <div class="toolbar">
@@ -143,6 +149,17 @@ function formatTime(iso: string) {
   color: var(--fg-muted);
   font-size: 0.95rem;
   line-height: 1.55;
+}
+.index-link {
+  margin: 0 0 12px;
+  font-size: 0.88rem;
+}
+.index-link a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.index-link a:hover {
+  text-decoration: underline;
 }
 .toolbar {
   display: flex;
