@@ -7,6 +7,15 @@ const router = createRouter({
     { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/browse', name: 'browse', component: () => import('../views/BrowseView.vue') },
     { path: '/item/:id', name: 'item-detail', component: () => import('../views/ItemDetailView.vue'), props: true },
+    { path: '/forum', name: 'forum-index', component: () => import('../views/ForumIndexView.vue') },
+    { path: '/forum/:categorySlug', name: 'forum-category', component: () => import('../views/ForumCategoryView.vue') },
+    {
+      path: '/forum/new',
+      name: 'forum-new-thread',
+      meta: { requiresAuth: true },
+      component: () => import('../views/ForumNewThreadView.vue'),
+    },
+    { path: '/t/:threadId', name: 'forum-thread', component: () => import('../views/ForumThreadView.vue') },
     {
       path: '/submit',
       name: 'submit',

@@ -10,6 +10,8 @@ const { authConfigured, authBusy, userId, userEmail, username, avatarUrl, signIn
 
 const emailInput = ref('')
 const nameInput = ref('')
+const donationUrlInput = ref('')
+const donationQrUrlInput = ref('')
 const info = ref('')
 const profileReady = ref(false)
 
@@ -47,8 +49,11 @@ watch(
     if (userId.value) {
       nameInput.value = username.value || ''
       void ensureProfileRow()
+      void loadDonation()
     } else {
       nameInput.value = ''
+      donationUrlInput.value = ''
+      donationQrUrlInput.value = ''
       profileReady.value = false
     }
   },
@@ -88,6 +93,73 @@ async function saveName() {
   await refreshProfile()
   nameInput.value = username.value || next
   toast('昵称已更新。')
+}
+
+async function loadDonation() {
+  if (!supabase || !userId.value) return
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('donation_url,donation_qr_url')
+    .eq('id', userId.value)
+    .maybeSingle()
+  if (error) return
+  donationUrlInput.value = (data as any)?.donation_url || ''
+  donationQrUrlInput.value = (data as any)?.donation_qr_url || ''
+}
+
+async function saveDonation() {
+  if (!supabase || !userId.value) return
+  await ensureProfileRow()
+  if (!profileReady.value) {
+    toast('资料未就绪，请稍后再试。')
+    return
+  }
+  const donation_url = donationUrlInput.value.trim()
+  const donation_qr_url = donationQrUrlInput.value.trim()
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ donation_url, donation_qr_url })
+    .eq('id', userId.value)
+    .select('id')
+  if (error) {
+    toast(error.message)
+    return
+  }
+  if (!data?.length) {
+    toast('没有更新成功：库里可能没有你的资料行，请刷新页面。')
+    return
+  }
+  toast('打赏信息已保存。')
+}
+
+async function onDonateQrChange(e: Event) {
+  if (!supabase || !userId.value) return
+  const input = e.target as HTMLInputElement
+  const file = input.files?.[0]
+  if (!file) return
+  try {
+    await ensureProfileRow()
+    if (!profileReady.value) throw new Error('资料未就绪，请稍后再试或刷新页面。')
+    if (file.size > 10 * 1024 * 1024) throw new Error('图片过大（>10MB）')
+    const path = `${userId.value}/donate.png`
+    const { error: upErr } = await supabase.storage
+      .from('content-files')
+      .upload(path, file, { upsert: true, contentType: file.type || 'image/png' })
+    if (upErr) {
+      if (upErr.message.includes('Bucket not found') || upErr.message.includes('not found')) {
+        throw new Error('存储桶未创建：请在 Supabase 执行 schema.sql 里 storage 段，或 Storage 里新建公开桶 content-files')
+      }
+      throw upErr
+    }
+    const { data } = supabase.storage.from('content-files').getPublicUrl(path)
+    const publicUrl = `${data.publicUrl}?t=${Date.now()}`
+    donationQrUrlInput.value = publicUrl
+    await saveDonation()
+  } catch (err) {
+    toast(err instanceof Error ? err.message : String(err))
+  } finally {
+    input.value = ''
+  }
 }
 
 async function fileToCircleBlob(file: File): Promise<Blob> {
@@ -210,6 +282,29 @@ async function onAvatarChange(e: Event) {
       <button class="ghost" @click="signOut">退出账号</button>
     </div>
   </section>
+
+  <section v-if="userId" class="card card--donate">
+    <h2 class="h2">打赏设置（作者入口）</h2>
+    <p class="donate-hint">会展示在你发布的论坛主题页上（仅展示链接/图片，不做任何支付中转）。</p>
+
+    <label class="field">
+      <span>打赏链接（可选）</span>
+      <input v-model="donationUrlInput" placeholder="https://afdian.com/a/xxx 或其它赞助页" />
+    </label>
+
+    <label class="field">
+      <span>收款码图片链接（可选）</span>
+      <input v-model="donationQrUrlInput" placeholder="可粘贴图片链接，或用下方上传" />
+    </label>
+
+    <div class="ops">
+      <button :disabled="!profileReady" @click="saveDonation">保存打赏信息</button>
+      <label class="upload">
+        上传收款码
+        <input type="file" accept="image/*" @change="onDonateQrChange" />
+      </label>
+    </div>
+  </section>
 </template>
 
 <style scoped>
@@ -237,6 +332,19 @@ h1 {
   background: var(--surface);
   padding: 14px;
   max-width: 560px;
+}
+.card--donate {
+  margin-top: 14px;
+  max-width: 760px;
+}
+.h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+.donate-hint {
+  margin: 0 0 12px;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
 }
 .top {
   display: flex;

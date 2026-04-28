@@ -20,7 +20,7 @@ export const mumu = {
   hubVersions: { title: '发布汇总', desc: '启动器、主程序、编写器去哪儿下？点这里。' },
   hubMe: { title: '个人设置', desc: '改昵称、头像，还有魔法链接登录～' },
   hubManage: { title: '我的上传', desc: '你发过的内容都在这里，想改想删都行。' },
-  hubForum: { title: '论坛', desc: '还在装修，先别急，回头再来串门～' },
+  hubForum: { title: '论坛', desc: '像贴吧那样发帖回帖；遇到垃圾就举报，管理员会来收拾～' },
 
   noSupabase:
     '咦，这边没连上云端……检查一下 README 里的 Supabase 配置好不好？配好了刷新就能用啦。',

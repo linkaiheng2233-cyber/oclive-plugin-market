@@ -64,10 +64,10 @@ const hub = [
         <span class="tile-k">{{ t.title }}</span>
         <span class="tile-d">{{ t.desc }}</span>
       </RouterLink>
-      <div class="tile tile--disabled" aria-disabled="true">
+      <RouterLink to="/forum" class="tile">
         <span class="tile-k">{{ mumu.hubForum.title }}</span>
         <span class="tile-d">{{ mumu.hubForum.desc }}</span>
-      </div>
+      </RouterLink>
     </section>
 
     <p v-if="!supabase" class="warn">{{ mumu.noSupabase }}</p>

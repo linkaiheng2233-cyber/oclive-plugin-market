@@ -16,6 +16,7 @@ const current = useRoute()
 const nav = [
   { to: '/', label: '主页', exact: true },
   { to: '/browse', label: '浏览', matchPrefix: '/browse' },
+  { to: '/forum', label: '论坛', matchPrefix: '/forum' },
   { to: '/docs/creator', label: '创作者文档', matchPrefix: '/docs/creator' },
   { to: '/announcements', label: '公告', matchPrefix: '/announcements' },
   { to: '/submit', label: '发布', matchPrefix: '/submit' },
@@ -25,6 +26,7 @@ const nav = [
 ]
 
 function navActive(to: string, exact?: boolean, matchPrefix?: string) {
+  if (to === '/forum') return current.path.startsWith('/forum') || current.path.startsWith('/t/')
   if (matchPrefix) return current.path.startsWith(matchPrefix)
   if (exact) return current.name === 'home' || current.path === '/'
   return current.path === to || current.path.startsWith(`${to}/`)

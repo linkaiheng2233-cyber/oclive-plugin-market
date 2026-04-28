@@ -43,6 +43,9 @@ export interface Profile {
   username: string
   avatar_url: string
   is_admin: boolean
+  donation_url?: string
+  donation_qr_url?: string
+  is_banned?: boolean
   created_at: string
   updated_at: string
 }
