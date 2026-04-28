@@ -76,9 +76,6 @@ onMounted(() => {
       <select v-model="typeFilter">
         <option value="all">全部类型</option>
         <option value="character">角色包</option>
-        <option value="plugin">插件</option>
-        <option value="module">模块</option>
-        <option value="branch">分支</option>
         <option value="announcement">公告</option>
       </select>
       <select v-model="statusFilter">

@@ -14,7 +14,7 @@ const { userId, isAdmin } = useAuthContext()
 const submitting = ref(false)
 const formError = ref('')
 
-const type = ref<ContentType>('plugin')
+const type = ref<ContentType>('character')
 const title = ref('')
 const description = ref('')
 const version = ref('1.0.0')
@@ -28,7 +28,7 @@ const typeOptions = computed(() => {
 })
 
 watch([isAdmin, type], () => {
-  if (type.value === 'announcement' && !isAdmin.value) type.value = 'plugin'
+  if (type.value === 'announcement' && !isAdmin.value) type.value = 'character'
 })
 
 async function submit() {

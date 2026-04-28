@@ -22,14 +22,9 @@ const cards = [
     to: '/docs/creator/compatibility',
   },
   {
-    title: '插件插槽与快捷键',
-    desc: '官方槽名、多外观、市场条目可选展示字段；与主程序 creator-docs 对齐。',
+    title: '插件插槽与快捷键（宿主对齐）',
+    desc: '官方槽名、多外观；供创作者理解「宿主界面有哪些入口」。',
     to: '/docs/creator/plugin-slots-hotkeys',
-  },
-  {
-    title: '插件市场与客户端安装',
-    desc: 'metadata.git、oclive:// 协议、索引 JSON 与客户端默认源、兜底下载链接。',
-    to: '/docs/creator/plugin-market',
   },
 ] as const
 </script>

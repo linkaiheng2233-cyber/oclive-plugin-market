@@ -5,12 +5,6 @@ import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { mumu } from '../content/mumuCopy'
 import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
-import {
-  gitUrlFromContentMetadata,
-  ocliveInstallHrefFromGit,
-  OCLIVE_CLIENT_RELEASE_LATEST,
-  pluginIndexUrlFromEnv,
-} from '../lib/ocliveProtocol'
 
 const props = defineProps<{ id: string }>()
 
@@ -21,20 +15,10 @@ const item = ref<ContentItem | null>(null)
 
 const isAnnouncement = computed(() => item.value?.type === 'announcement')
 const showDownload = computed(
-  () => item.value && !isAnnouncement.value && (item.value.download_url?.trim()?.length ?? 0) > 0
+  () =>
+    item.value?.type === 'character' &&
+    (item.value.download_url?.trim()?.length ?? 0) > 0
 )
-
-const pluginGitUrl = computed(() =>
-  item.value?.type === 'plugin' ? gitUrlFromContentMetadata(item.value.metadata) : null
-)
-const showOcliveInstall = computed(() => (pluginGitUrl.value?.length ?? 0) > 0)
-const pluginIndexUrl = pluginIndexUrlFromEnv()
-
-function openInOcliveClient() {
-  const g = pluginGitUrl.value
-  if (!g) return
-  window.location.href = ocliveInstallHrefFromGit(g)
-}
 
 async function load() {
   const id = props.id
@@ -95,33 +79,12 @@ function openDownload() {
         {{ item.description }}
       </section>
 
-      <div v-if="showOcliveInstall" class="dl oclive-row">
-        <button type="button" class="btn btn-oclive" @click="openInOcliveClient">
-          在 Oclive 客户端安装
-        </button>
-        <a
-          class="link-fallback"
-          :href="OCLIVE_CLIENT_RELEASE_LATEST"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          未取得 oclive:// 协议？前往 GitHub 最新版
-        </a>
-        <p class="hint">
-          使用 <code>metadata.git</code> 作为 Git 源（非 download_url）。协议：
-          <code>oclive://install?plugin=…</code>
-          <template v-if="pluginIndexUrl">
-            ·
-            <a :href="pluginIndexUrl" target="_blank" rel="noopener noreferrer">索引 JSON</a>
-          </template>
-        </p>
-      </div>
       <div v-if="showDownload" class="dl">
         <button type="button" class="btn" @click="openDownload">下载</button>
         <p class="hint">{{ mumu.dlHint }}</p>
       </div>
       <div
-        v-if="isAnnouncement && !showDownload && !showOcliveInstall"
+        v-if="isAnnouncement && !showDownload"
         class="note"
       >
         {{ mumu.detailNoDlAnnouncement }}

@@ -19,7 +19,7 @@ const nav = [
   { to: '/docs/creator', label: '创作者文档', matchPrefix: '/docs/creator' },
   { to: '/announcements', label: '公告', matchPrefix: '/announcements' },
   { to: '/submit', label: '发布', matchPrefix: '/submit' },
-  { to: '/versions', label: '版本下载', matchPrefix: '/versions' },
+  { to: '/versions', label: '发布汇总', matchPrefix: '/versions' },
   { to: '/manage', label: '我的上传', matchPrefix: '/manage' },
   { to: '/me', label: '个人设置', matchPrefix: '/me' },
 ]

@@ -9,17 +9,14 @@ export interface PluginListing {
   author: string
 }
 
-export type ContentType = 'character' | 'plugin' | 'module' | 'branch' | 'announcement'
+export type ContentType = 'character' | 'announcement'
 export type ContentStatus = 'published' | 'hidden'
 
 /** 浏览页展示的资源类型（不含公告） */
-export const RESOURCE_TYPES: ContentType[] = ['character', 'plugin', 'module', 'branch']
+export const RESOURCE_TYPES: ContentType[] = ['character']
 
 export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
   character: '角色包',
-  plugin: '插件',
-  module: '模块',
-  branch: '分支',
   announcement: '公告',
 }
 
