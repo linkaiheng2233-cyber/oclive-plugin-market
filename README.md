@@ -1,5 +1,10 @@
 # Oclive 插件市场（社区站 V1）
 
+> **状态：已封存（暂停迭代）**
+>
+> 该仓库当前作为 **社区站** 的备选实现被封存：后续会观察是否启用/重启开发。  
+> **注意**：它不是 `oclivenewnew` 客户端内置的市场。客户端内置的市场/安装入口统一称为 **Oclive Manager（应用内：插件与后端管理）**。
+
 以 **Supabase** 为数据源的动态站点：浏览资源、查看详情与外部下载链接、登录后发布内容、公告列表。首页为功能入口枢纽，并展示最新一条公告标题。
 
 - 契约说明：[PLUGIN_WEB_SECTION.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)
