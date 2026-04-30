@@ -7,8 +7,8 @@
 
 以 **Supabase** 为数据源的动态站点：浏览资源、查看详情与外部下载链接、登录后发布内容、公告列表。首页为功能入口枢纽，并展示最新一条公告标题。
 
-- 契约说明：[PLUGIN_WEB_SECTION.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)
-- 协议文档：[REMOTE_PLUGIN_PROTOCOL.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md)
+- 契约说明：[PLUGIN_WEB_SECTION.md](https://github.com/oclive-app/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)
+- 协议文档：[REMOTE_PLUGIN_PROTOCOL.md](https://github.com/oclive-app/oclivenewnew/blob/main/creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md)
 
 ## 开发
 
