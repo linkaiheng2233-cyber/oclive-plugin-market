@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import type { ContentItem } from '../types'
+
+const mumu = useMarketCopy()
 
 const supabase = getSupabaseClient()
 
@@ -30,14 +32,17 @@ onMounted(async () => {
   latestAnnouncement.value = mapContentRow(data as ContentItemRow)
 })
 
-const hub = [
-  { to: '/browse', ...mumu.hubBrowse, primary: true },
-  { to: '/submit', ...mumu.hubSubmit, primary: true },
-  { to: '/announcements', ...mumu.hubAnnouncements, primary: false },
-  { to: '/versions', ...mumu.hubVersions, primary: false },
-  { to: '/me', ...mumu.hubMe, primary: false },
-  { to: '/manage', ...mumu.hubManage, primary: false },
-]
+const hub = computed(() => {
+  const m = mumu.value
+  return [
+    { to: '/browse', ...m.hubBrowse, primary: true },
+    { to: '/submit', ...m.hubSubmit, primary: true },
+    { to: '/announcements', ...m.hubAnnouncements, primary: false },
+    { to: '/versions', ...m.hubVersions, primary: false },
+    { to: '/me', ...m.hubMe, primary: false },
+    { to: '/manage', ...m.hubManage, primary: false },
+  ]
+})
 </script>
 
 <template>

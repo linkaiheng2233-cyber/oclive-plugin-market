@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import type { ContentItem } from '../types'
 
-const supabase = getSupabaseClient()
+const mumu = useMarketCopy()
 const loading = ref(true)
 const err = ref('')
 const items = ref<ContentItem[]>([])
@@ -14,7 +14,7 @@ const items = ref<ContentItem[]>([])
 async function load() {
   if (!supabase) {
     loading.value = false
-    err.value = mumu.noSupabase
+    err.value = mumu.value.noSupabase
     return
   }
   loading.value = true

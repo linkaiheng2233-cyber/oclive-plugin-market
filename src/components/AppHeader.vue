@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AvatarImg from './AvatarImg.vue'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
+import { getLocalePreference, setLocalePreference, type LocalePreference } from '../i18n'
 
 const props = defineProps<{
   isAdmin: boolean
@@ -11,19 +14,29 @@ const props = defineProps<{
   username: string
 }>()
 
+const { t } = useI18n()
+const mumu = useMarketCopy()
 const current = useRoute()
 
-const nav = [
-  { to: '/', label: '主页', exact: true },
-  { to: '/browse', label: '浏览', matchPrefix: '/browse' },
-  { to: '/forum', label: '论坛', matchPrefix: '/forum' },
-  { to: '/docs/creator', label: '创作者文档', matchPrefix: '/docs/creator' },
-  { to: '/announcements', label: '公告', matchPrefix: '/announcements' },
-  { to: '/submit', label: '发布', matchPrefix: '/submit' },
-  { to: '/versions', label: '发布汇总', matchPrefix: '/versions' },
-  { to: '/manage', label: '我的上传', matchPrefix: '/manage' },
-  { to: '/me', label: '个人设置', matchPrefix: '/me' },
-]
+const nav = computed(() => [
+  { to: '/', label: t('market.nav.home'), exact: true },
+  { to: '/browse', label: t('market.nav.browse'), matchPrefix: '/browse' },
+  { to: '/forum', label: t('market.nav.forum'), matchPrefix: '/forum' },
+  { to: '/docs/creator', label: t('market.nav.docs'), matchPrefix: '/docs/creator' },
+  { to: '/announcements', label: t('market.nav.announcements'), matchPrefix: '/announcements' },
+  { to: '/submit', label: t('market.nav.submit'), matchPrefix: '/submit' },
+  { to: '/versions', label: t('market.nav.versions'), matchPrefix: '/versions' },
+  { to: '/manage', label: t('market.nav.manage'), matchPrefix: '/manage' },
+  { to: '/me', label: t('market.nav.me'), matchPrefix: '/me' },
+])
+
+const uiLocale = ref<LocalePreference>(getLocalePreference())
+
+function onLocaleChange(ev: Event) {
+  const v = (ev.target as HTMLSelectElement).value as LocalePreference
+  uiLocale.value = v
+  setLocalePreference(v)
+}
 
 function navActive(to: string, exact?: boolean, matchPrefix?: string) {
   if (to === '/forum') return current.path.startsWith('/forum') || current.path.startsWith('/t/')
@@ -41,7 +54,7 @@ function navActive(to: string, exact?: boolean, matchPrefix?: string) {
           <span class="logo" aria-hidden="true">◇</span>
           <span class="brand-text">{{ mumu.siteTagline }}</span>
         </RouterLink>
-        <nav class="nav" aria-label="主导航">
+        <nav class="nav" :aria-label="t('market.nav.mainNav')">
           <RouterLink
             v-for="n in nav"
             :key="n.to"
@@ -57,12 +70,20 @@ function navActive(to: string, exact?: boolean, matchPrefix?: string) {
       </div>
 
       <div class="right">
-        <RouterLink v-if="props.isAdmin" to="/admin" class="admin-link">管理</RouterLink>
-        <RouterLink v-if="props.isAuthed" to="/me" class="avatar-link" title="个人设置">
+        <label class="locale-wrap">
+          <span class="sr-only">{{ t('market.nav.localeLabel') }}</span>
+          <select class="locale-select" :value="uiLocale" @change="onLocaleChange">
+            <option value="system">{{ t('market.nav.system') }}</option>
+            <option value="zh-CN">{{ t('market.nav.zh') }}</option>
+            <option value="en-US">{{ t('market.nav.en') }}</option>
+          </select>
+        </label>
+        <RouterLink v-if="props.isAdmin" to="/admin" class="admin-link">{{ t('market.nav.admin') }}</RouterLink>
+        <RouterLink v-if="props.isAuthed" to="/me" class="avatar-link" :title="t('market.nav.avatarTitle')">
           <AvatarImg v-if="props.avatarUrl" :stored-url="props.avatarUrl" img-class="avatar" />
           <span v-else class="avatar-fallback">{{ props.username?.slice(0, 1) || 'U' }}</span>
         </RouterLink>
-        <RouterLink to="/submit" class="cta">发布资源</RouterLink>
+        <RouterLink to="/submit" class="cta">{{ t('market.nav.cta') }}</RouterLink>
       </div>
     </div>
   </header>
@@ -143,6 +164,39 @@ function navActive(to: string, exact?: boolean, matchPrefix?: string) {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.locale-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.locale-select {
+  font: inherit;
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.locale-select:hover {
+  border-color: var(--accent-soft);
+  color: var(--fg);
 }
 
 .admin-link {

@@ -1,0 +1,57 @@
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+
+/** Site copy keyed like the former `mumu` object (templates use `mumu.xxx` with auto-unref). */
+export function useMarketCopy() {
+  const { t } = useI18n();
+  return computed(() => ({
+    siteTagline: t("market.siteTagline"),
+    homeEyebrow: t("market.homeEyebrow"),
+    homeTitle: t("market.homeTitle"),
+    homeLead: t("market.homeLead"),
+    homeWelcomeNoAnn: t("market.homeWelcomeNoAnn"),
+    annLoading: t("market.annLoading"),
+    annLabel: t("market.annLabel"),
+    hubBrowse: { title: t("market.hubBrowse.title"), desc: t("market.hubBrowse.desc") },
+    hubSubmit: { title: t("market.hubSubmit.title"), desc: t("market.hubSubmit.desc") },
+    hubAnnouncements: {
+      title: t("market.hubAnnouncements.title"),
+      desc: t("market.hubAnnouncements.desc"),
+    },
+    hubVersions: { title: t("market.hubVersions.title"), desc: t("market.hubVersions.desc") },
+    hubMe: { title: t("market.hubMe.title"), desc: t("market.hubMe.desc") },
+    hubManage: { title: t("market.hubManage.title"), desc: t("market.hubManage.desc") },
+    hubForum: { title: t("market.hubForum.title"), desc: t("market.hubForum.desc") },
+    noSupabase: t("market.noSupabase"),
+    browseTitle: t("market.browseTitle"),
+    browseSub: t("market.browseSub"),
+    browseSearchPlaceholder: t("market.browseSearchPlaceholder"),
+    sortNewest: t("market.sortNewest"),
+    sortOldest: t("market.sortOldest"),
+    sortTitle: t("market.sortTitle"),
+    loading: t("market.loading"),
+    emptyBrowse: t("market.emptyBrowse"),
+    noSearchResults: t("market.noSearchResults"),
+    announcementsTitle: t("market.announcementsTitle"),
+    announcementsSub: t("market.announcementsSub"),
+    emptyAnnouncements: t("market.emptyAnnouncements"),
+    detailLoading: t("market.detailLoading"),
+    detailNotFound: t("market.detailNotFound"),
+    detailLoadErr: t("market.detailLoadErr"),
+    detailCrumbBrowse: t("market.detailCrumbBrowse"),
+    dlHint: t("market.dlHint"),
+    detailNoDlAnnouncement: t("market.detailNoDlAnnouncement"),
+    submitTitle: t("market.submitTitle"),
+    submitSub: t("market.submitSub"),
+    submitErrorLogin: t("market.submitErrorLogin"),
+    submitErrorFields: t("market.submitErrorFields"),
+    submitErrorUrl: t("market.submitErrorUrl"),
+    submitErrorAnnounce: t("market.submitErrorAnnounce"),
+    submitErrorPolicy: t("market.submitErrorPolicy"),
+    submitHintUrl: t("market.submitHintUrl"),
+    submitBtn: t("market.submitBtn"),
+    submitBtnLoading: t("market.submitBtnLoading"),
+    toastSignOut: t("market.toastSignOut"),
+    toastEmailSent: t("market.toastEmailSent"),
+  }));
+}

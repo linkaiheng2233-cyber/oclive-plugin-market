@@ -2,12 +2,12 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthContext } from '../composables/useAuthContext'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
 import { violatesContentPolicy } from '../lib/contentPolicy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_TYPE_LABELS, RESOURCE_TYPES, type ContentItem, type ContentType } from '../types'
 
-const supabase = getSupabaseClient()
+const mumu = useMarketCopy()
 const router = useRouter()
 const { userId, isAdmin } = useAuthContext()
 
@@ -34,7 +34,7 @@ watch([isAdmin, type], () => {
 async function submit() {
   formError.value = ''
   if (!supabase || !userId.value) {
-    formError.value = mumu.submitErrorLogin
+    formError.value = mumu.value.submitErrorLogin
     return
   }
   const t = title.value.trim()
@@ -42,19 +42,19 @@ async function submit() {
   const v = version.value.trim()
   const url = downloadUrl.value.trim()
   if (!t || !d || !v) {
-    formError.value = mumu.submitErrorFields
+    formError.value = mumu.value.submitErrorFields
     return
   }
   if (type.value !== 'announcement' && !url) {
-    formError.value = mumu.submitErrorUrl
+    formError.value = mumu.value.submitErrorUrl
     return
   }
   if (type.value === 'announcement' && !isAdmin.value) {
-    formError.value = mumu.submitErrorAnnounce
+    formError.value = mumu.value.submitErrorAnnounce
     return
   }
   if (violatesContentPolicy(t, d)) {
-    formError.value = mumu.submitErrorPolicy
+    formError.value = mumu.value.submitErrorPolicy
     return
   }
 

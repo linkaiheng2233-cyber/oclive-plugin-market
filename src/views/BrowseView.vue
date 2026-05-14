@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { CONTENT_TYPE_LABELS, type ContentItem, type ContentType, RESOURCE_TYPES } from '../types'
 
-const supabase = getSupabaseClient()
+const mumu = useMarketCopy()
 
 const loading = ref(true)
 const err = ref('')
@@ -43,7 +43,7 @@ const filtered = computed(() => {
 async function load() {
   if (!supabase) {
     loading.value = false
-    err.value = mumu.noSupabase
+    err.value = mumu.value.noSupabase
     return
   }
   loading.value = true

@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import type { Session } from '@supabase/supabase-js'
 import AppHeader from './components/AppHeader.vue'
-import { mumu } from './content/mumuCopy'
+import { useMarketCopy } from './composables/useMarketCopy'
 import { authContextKey } from './composables/useAuthContext'
 import { getSupabaseClient } from './lib/supabase'
 import type { Profile } from './types'
 
-const toast = ref('')
+const { t } = useI18n()
+const mumu = useMarketCopy()
 
-const authBusy = ref(false)
+const toast = ref('')
 const authConfigured = ref(false)
 const userId = ref('')
 const userEmail = ref('')
@@ -18,6 +20,7 @@ const username = ref('')
 const avatarUrl = ref('')
 const isAdmin = ref(false)
 const profile = ref<Profile | null>(null)
+const authBusy = ref(false)
 
 const supabase = getSupabaseClient()
 authConfigured.value = !!supabase
@@ -91,7 +94,7 @@ async function setupAuth() {
   if (!supabase) return
   const { error: initError } = await supabase.auth.initialize()
   if (initError) {
-    showToast(`登录链接无效或已过期：${initError.message}`)
+    showToast(t("market.toastAuthLinkInvalid", { msg: initError.message }))
   }
   const { data } = await supabase.auth.getSession()
   await setSession(data.session)
@@ -117,7 +120,7 @@ async function setSession(session: Session | null) {
 
 async function signInWithEmail(email: string) {
   if (!supabase) {
-    showToast('未配置 Supabase。')
+    showToast(t("market.toastSupabaseMissing"))
     return
   }
   authBusy.value = true
@@ -125,10 +128,10 @@ async function signInWithEmail(email: string) {
   const { error: e } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } })
   authBusy.value = false
   if (e) {
-    showToast(`发送失败：${e.message}`)
+    showToast(t("market.signInSendFailed", { msg: e.message }))
     return
   }
-  showToast(mumu.toastEmailSent)
+  showToast(mumu.value.toastEmailSent)
 }
 
 async function signOut() {
@@ -136,7 +139,7 @@ async function signOut() {
   authBusy.value = true
   await supabase.auth.signOut()
   authBusy.value = false
-  showToast(mumu.toastSignOut)
+  showToast(mumu.value.toastSignOut)
 }
 
 onMounted(() => {
@@ -150,7 +153,7 @@ onUnmounted(() => {
 
 <template>
   <div class="page">
-    <a class="skip" href="#main">跳到主要内容</a>
+    <a class="skip" href="#main">{{ t("market.app.skipToMain") }}</a>
     <AppHeader
       :is-admin="isAdmin"
       :is-authed="!!userId"
@@ -164,13 +167,13 @@ onUnmounted(() => {
 
     <footer class="foot">
       <p>
-        <RouterLink to="/versions">软件版本与下载</RouterLink>
+        <RouterLink to="/versions">{{ t("market.app.footVersions") }}</RouterLink>
         ·
-        <RouterLink to="/announcements">公告</RouterLink>
+        <RouterLink to="/announcements">{{ t("market.app.footAnnouncements") }}</RouterLink>
         ·
-        <RouterLink to="/docs/creator">创作者文档</RouterLink>
+        <RouterLink to="/docs/creator">{{ t("market.app.footCreatorDocs") }}</RouterLink>
         ·
-        文档：
+        {{ t("market.app.footDocLabel") }}
         <a
           href="https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md"
           target="_blank"
@@ -178,7 +181,7 @@ onUnmounted(() => {
           >PLUGIN_WEB_SECTION</a
         >
       </p>
-      <p class="muted">沐沐和 Oclive 祝你用得开心～有问题先看文档，再来社区转转。</p>
+      <p class="muted">{{ t("market.app.footMuted") }}</p>
     </footer>
   </div>
 </template>

@@ -3,12 +3,12 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
-import { mumu } from '../content/mumuCopy'
+import { useMarketCopy } from '../composables/useMarketCopy'
 import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
 
-const props = defineProps<{ id: string }>()
+const mumu = useMarketCopy()
 
-const supabase = getSupabaseClient()
+const props = defineProps<{ id: string }>()
 const loading = ref(true)
 const err = ref('')
 const item = ref<ContentItem | null>(null)
@@ -24,7 +24,7 @@ async function load() {
   const id = props.id
   if (!supabase || !id) {
     loading.value = false
-    err.value = mumu.noSupabase
+    err.value = mumu.value.noSupabase
     return
   }
   loading.value = true
