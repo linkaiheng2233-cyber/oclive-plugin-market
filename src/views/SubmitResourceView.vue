@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { useAuthContext } from '../composables/useAuthContext'
 import { useMarketCopy } from '../composables/useMarketCopy'
 import { violatesContentPolicy } from '../lib/contentPolicy'
 import { getSupabaseClient } from '../lib/supabase'
-import { CONTENT_TYPE_LABELS, RESOURCE_TYPES, type ContentItem, type ContentType } from '../types'
+import { RESOURCE_TYPES, type ContentItem, type ContentType } from '../types'
 
+const { t } = useI18n()
 const mumu = useMarketCopy()
 const router = useRouter()
 const { userId, isAdmin } = useAuthContext()
+const supabase = getSupabaseClient()
 
 const submitting = ref(false)
 const formError = ref('')
@@ -37,11 +40,11 @@ async function submit() {
     formError.value = mumu.value.submitErrorLogin
     return
   }
-  const t = title.value.trim()
+  const titleTrim = title.value.trim()
   const d = description.value.trim()
   const v = version.value.trim()
   const url = downloadUrl.value.trim()
-  if (!t || !d || !v) {
+  if (!titleTrim || !d || !v) {
     formError.value = mumu.value.submitErrorFields
     return
   }
@@ -53,7 +56,7 @@ async function submit() {
     formError.value = mumu.value.submitErrorAnnounce
     return
   }
-  if (violatesContentPolicy(t, d)) {
+  if (violatesContentPolicy(titleTrim, d)) {
     formError.value = mumu.value.submitErrorPolicy
     return
   }
@@ -65,7 +68,7 @@ async function submit() {
 
   const row: Omit<ContentItem, 'id' | 'author_name' | 'created_at' | 'updated_at' | 'download_count' | 'last_published_at'> = {
     type: type.value,
-    title: t,
+    title: titleTrim,
     description: d,
     version: v,
     download_url: type.value === 'announcement' ? url || '' : url,
@@ -97,43 +100,43 @@ async function submit() {
 
     <form class="form" @submit.prevent="submit">
       <label class="field">
-        <span class="label">类型</span>
+        <span class="label">{{ t('market.submitForm.type') }}</span>
         <select v-model="type" class="input" required>
-          <option v-for="opt in typeOptions" :key="opt" :value="opt">{{ CONTENT_TYPE_LABELS[opt] }}</option>
+          <option v-for="opt in typeOptions" :key="opt" :value="opt">{{ t(`market.contentType.${opt}`) }}</option>
         </select>
       </label>
 
       <label class="field">
-        <span class="label">标题 <span class="req">*</span></span>
+        <span class="label">{{ t('market.submitForm.title') }} <span class="req">{{ t('market.submitForm.requiredStar') }}</span></span>
         <input v-model="title" class="input" type="text" required maxlength="200" autocomplete="off" />
       </label>
 
       <label class="field">
-        <span class="label">描述 <span class="req">*</span></span>
+        <span class="label">{{ t('market.submitForm.desc') }} <span class="req">{{ t('market.submitForm.requiredStar') }}</span></span>
         <textarea v-model="description" class="textarea" rows="6" required maxlength="20000" />
       </label>
 
       <label class="field">
-        <span class="label">版本 <span class="req">*</span></span>
-        <input v-model="version" class="input" type="text" required placeholder="例如 1.0.0" />
+        <span class="label">{{ t('market.submitForm.version') }} <span class="req">{{ t('market.submitForm.requiredStar') }}</span></span>
+        <input v-model="version" class="input" type="text" required :placeholder="t('market.submitForm.versionPh')" />
       </label>
 
       <label class="field">
-        <span class="label">下载链接 <span v-if="type !== 'announcement'" class="req">*</span></span>
+        <span class="label">{{ t('market.submitForm.downloadUrl') }} <span v-if="type !== 'announcement'" class="req">{{ t('market.submitForm.requiredStar') }}</span></span>
         <input
           v-model="downloadUrl"
           class="input"
           type="url"
           :required="type !== 'announcement'"
-          placeholder="网盘或 GitHub Release 直链"
+          :placeholder="t('market.submitForm.urlPh')"
           autocomplete="off"
         />
         <span class="hint">{{ mumu.submitHintUrl }}</span>
       </label>
 
       <label class="field">
-        <span class="label">标签（可选）</span>
-        <input v-model="tagsStr" class="input" type="text" placeholder="逗号分隔多个标签" autocomplete="off" />
+        <span class="label">{{ t('market.submitForm.tags') }}</span>
+        <input v-model="tagsStr" class="input" type="text" :placeholder="t('market.submitForm.tagsPh')" autocomplete="off" />
       </label>
 
       <p v-if="formError" class="err">{{ formError }}</p>

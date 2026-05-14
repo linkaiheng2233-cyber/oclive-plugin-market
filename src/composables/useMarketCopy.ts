@@ -53,5 +53,7 @@ export function useMarketCopy() {
     submitBtnLoading: t("market.submitBtnLoading"),
     toastSignOut: t("market.toastSignOut"),
     toastEmailSent: t("market.toastEmailSent"),
+    toastSupabaseMissing: t("market.toastSupabaseMissing"),
+    toastAuthLinkInvalid: t("market.toastAuthLinkInvalid"),
   }));
 }

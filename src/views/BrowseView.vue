@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useMarketCopy } from '../composables/useMarketCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
-import { CONTENT_TYPE_LABELS, type ContentItem, type ContentType, RESOURCE_TYPES } from '../types'
+import type { ContentItem, ContentType } from '../types'
+import { RESOURCE_TYPES } from '../types'
 
+const { t, locale } = useI18n()
 const mumu = useMarketCopy()
+const supabase = getSupabaseClient()
 
 const loading = ref(true)
 const err = ref('')
@@ -35,7 +39,8 @@ const filtered = computed(() => {
   } else if (sortMode.value === 'oldest') {
     arr.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
   } else {
-    arr.sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'))
+    const loc = locale.value === 'en-US' ? 'en' : 'zh-CN'
+    arr.sort((a, b) => a.title.localeCompare(b.title, loc))
   }
   return arr
 })
@@ -82,7 +87,7 @@ function formatTime(iso: string) {
     </header>
 
     <div class="toolbar">
-      <label class="sr-only" for="browse-search">搜索</label>
+      <label class="sr-only" for="browse-search">{{ t('market.browse.searchAria') }}</label>
       <input
         id="browse-search"
         v-model="searchQuery"
@@ -92,12 +97,12 @@ function formatTime(iso: string) {
         autocomplete="off"
       />
       <div class="toolbar-row">
-        <label class="sr-only" for="type-filter">类型</label>
+        <label class="sr-only" for="type-filter">{{ t('market.browse.typeFilterAria') }}</label>
         <select id="type-filter" v-model="typeFilter" class="select">
-          <option value="all">全部类型</option>
-          <option v-for="t in RESOURCE_TYPES" :key="t" :value="t">{{ CONTENT_TYPE_LABELS[t] }}</option>
+          <option value="all">{{ t('market.browse.allTypes') }}</option>
+          <option v-for="ty in RESOURCE_TYPES" :key="ty" :value="ty">{{ t(`market.contentType.${ty}`) }}</option>
         </select>
-        <label class="sr-only" for="sort-mode">排序</label>
+        <label class="sr-only" for="sort-mode">{{ t('market.browse.sortAria') }}</label>
         <select id="sort-mode" v-model="sortMode" class="select">
           <option value="newest">{{ mumu.sortNewest }}</option>
           <option value="oldest">{{ mumu.sortOldest }}</option>
@@ -113,7 +118,7 @@ function formatTime(iso: string) {
         <li v-for="item in filtered" :key="item.id" class="card">
           <RouterLink class="title" :to="{ name: 'item-detail', params: { id: item.id } }">{{ item.title }}</RouterLink>
           <div class="meta">
-            <span class="tag">{{ CONTENT_TYPE_LABELS[item.type] }}</span>
+            <span class="tag">{{ t(`market.contentType.${item.type}`) }}</span>
             <span class="author">{{ item.author_name || '—' }}</span>
             <time :datetime="item.created_at">{{ formatTime(item.created_at) }}</time>
           </div>
@@ -121,7 +126,7 @@ function formatTime(iso: string) {
       </ul>
       <div v-else-if="!items.length" class="empty-box">
         <p>{{ mumu.emptyBrowse }}</p>
-        <RouterLink class="cta" to="/submit">去发布</RouterLink>
+        <RouterLink class="cta" to="/submit">{{ t('market.browse.goSubmit') }}</RouterLink>
       </div>
       <div v-else class="empty-box">
         <p>{{ mumu.noSearchResults }}</p>

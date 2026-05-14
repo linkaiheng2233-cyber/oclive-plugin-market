@@ -12,13 +12,8 @@ export interface PluginListing {
 export type ContentType = 'character' | 'announcement'
 export type ContentStatus = 'published' | 'hidden'
 
-/** 浏览页展示的资源类型（不含公告） */
+/** Browse filters exclude announcements */
 export const RESOURCE_TYPES: ContentType[] = ['character']
-
-export const CONTENT_TYPE_LABELS: Record<ContentType, string> = {
-  character: '角色包',
-  announcement: '公告',
-}
 
 export interface ContentItem {
   id: string

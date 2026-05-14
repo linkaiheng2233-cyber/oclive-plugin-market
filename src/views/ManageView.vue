@@ -1,145 +1,160 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import { useAuthContext } from '../composables/useAuthContext'
-import { getSupabaseClient } from '../lib/supabase'
-import { CONTENT_TYPE_LABELS, type ContentItem, type ContentStatus, type ContentType } from '../types'
+import { computed, onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import { useAuthContext } from "../composables/useAuthContext";
+import { getSupabaseClient } from "../lib/supabase";
+import type { ContentItem, ContentStatus, ContentType } from "../types";
 
-const supabase = getSupabaseClient()
-const { userId, userEmail } = useAuthContext()
+const { t } = useI18n();
+const supabase = getSupabaseClient();
+const { userId, userEmail } = useAuthContext();
 
-const loading = ref(false)
-const err = ref('')
-const items = ref<ContentItem[]>([])
-const typeFilter = ref<'all' | ContentType>('all')
+const loading = ref(false);
+const err = ref("");
+const items = ref<ContentItem[]>([]);
+type ManageTab = "all" | ContentType | "plugin" | "module" | "branch";
+const typeFilter = ref<ManageTab>("all");
 
-const filtered = computed(() =>
-  typeFilter.value === 'all' ? items.value : items.value.filter((x) => x.type === typeFilter.value)
-)
+const filtered = computed(() => {
+  if (typeFilter.value === "all") return items.value;
+  if (typeFilter.value === "plugin" || typeFilter.value === "module" || typeFilter.value === "branch") {
+    return [];
+  }
+  return items.value.filter((x) => x.type === typeFilter.value);
+});
 
 function asList(meta: unknown) {
   try {
-    return JSON.stringify(meta, null, 2)
+    return JSON.stringify(meta, null, 2);
   } catch {
-    return '{}'
+    return "{}";
   }
 }
 
 async function loadMine() {
-  if (!supabase || !userId.value) return
-  loading.value = true
-  err.value = ''
+  if (!supabase || !userId.value) return;
+  loading.value = true;
+  err.value = "";
   const { data, error } = await supabase
-    .from('content_items')
-    .select('*')
-    .eq('author_id', userId.value)
-    .order('updated_at', { ascending: false })
-  loading.value = false
+    .from("content_items")
+    .select("*")
+    .eq("author_id", userId.value)
+    .order("updated_at", { ascending: false });
+  loading.value = false;
   if (error) {
-    err.value = error.message
-    return
+    err.value = error.message;
+    return;
   }
-  items.value = (data ?? []) as ContentItem[]
+  items.value = (data ?? []) as ContentItem[];
 }
 
 async function toggleStatus(item: ContentItem) {
-  if (!supabase) return
-  const next: ContentStatus = item.status === 'published' ? 'hidden' : 'published'
-  const { error } = await supabase.from('content_items').update({ status: next }).eq('id', item.id)
+  if (!supabase) return;
+  const next: ContentStatus = item.status === "published" ? "hidden" : "published";
+  const { error } = await supabase.from("content_items").update({ status: next }).eq("id", item.id);
   if (error) {
-    err.value = error.message
-    return
+    err.value = error.message;
+    return;
   }
-  item.status = next
+  item.status = next;
 }
 
 async function removeItem(item: ContentItem) {
-  if (!supabase) return
-  if (!window.confirm(`确定删除「${item.title}」吗？`)) return
-  const { error } = await supabase.from('content_items').delete().eq('id', item.id)
+  if (!supabase) return;
+  if (!window.confirm(t("market.manage.confirmDelete", { title: item.title }))) return;
+  const { error } = await supabase.from("content_items").delete().eq("id", item.id);
   if (error) {
-    err.value = error.message
-    return
+    err.value = error.message;
+    return;
   }
-  items.value = items.value.filter((x) => x.id !== item.id)
+  items.value = items.value.filter((x) => x.id !== item.id);
 }
 
 async function editItem(item: ContentItem) {
-  if (!supabase) return
-  const title = window.prompt('标题', item.title)
-  if (!title) return
-  const description = window.prompt('简介', item.description)
-  if (!description) return
-  const tagsStr = window.prompt('标签（逗号分隔）', item.tags.join(','))
-  if (tagsStr == null) return
-  const version = window.prompt('版本号', item.version || 'v1.0.0')
-  if (!version) return
-  const metadataStr = window.prompt('metadata JSON', asList(item.metadata))
-  if (metadataStr == null) return
-  let metadata: Record<string, unknown> = {}
+  if (!supabase) return;
+  const nextTitle = window.prompt(t("market.manage.promptTitle"), item.title);
+  if (!nextTitle) return;
+  const description = window.prompt(t("market.manage.promptDesc"), item.description);
+  if (!description) return;
+  const tagsStr = window.prompt(t("market.manage.promptTags"), item.tags.join(","));
+  if (tagsStr == null) return;
+  const version = window.prompt(t("market.manage.promptVersion"), item.version || "v1.0.0");
+  if (!version) return;
+  const metadataStr = window.prompt(t("market.manage.promptMetadata"), asList(item.metadata));
+  if (metadataStr == null) return;
+  let metadata: Record<string, unknown> = {};
   try {
-    metadata = JSON.parse(metadataStr)
+    metadata = JSON.parse(metadataStr);
   } catch {
-    window.alert('metadata 不是合法 JSON')
-    return
+    window.alert(t("market.manage.metaInvalid"));
+    return;
   }
 
   const { error } = await supabase
-    .from('content_items')
+    .from("content_items")
     .update({
-      title,
+      title: nextTitle,
       description,
       tags: tagsStr
-        .split(',')
+        .split(",")
         .map((x) => x.trim())
         .filter(Boolean),
       version,
       metadata,
     })
-    .eq('id', item.id)
+    .eq("id", item.id);
   if (error) {
-    err.value = error.message
-    return
+    err.value = error.message;
+    return;
   }
   Object.assign(item, {
-    title,
+    title: nextTitle,
     description,
     tags: tagsStr
-      .split(',')
+      .split(",")
       .map((x) => x.trim())
       .filter(Boolean),
     version,
     metadata,
-  })
+  });
 }
 
 onMounted(() => {
-  void loadMine()
-})
+  void loadMine();
+});
 </script>
 
 <template>
   <div class="page-head">
-    <h1>我的上传管理</h1>
-    <p class="sub">你可以编辑、下架/恢复、删除自己的角色包、插件、模块与分支。</p>
-    <p v-if="userEmail" class="hint">当前账号：{{ userEmail }}</p>
+    <h1>{{ t("market.manage.title") }}</h1>
+    <p class="sub">{{ t("market.manage.sub") }}</p>
+    <p v-if="userEmail" class="hint">{{ t("market.manage.account", { email: userEmail }) }}</p>
   </div>
 
-  <p v-if="!userId" class="state err">请先登录后再管理上传内容。</p>
+  <p v-if="!userId" class="state err">{{ t("market.manage.needLogin") }}</p>
   <template v-else>
     <div class="tabs">
-      <button class="tab" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">全部</button>
-      <button class="tab" :class="{ active: typeFilter === 'character' }" @click="typeFilter = 'character'">
-        角色包
+      <button class="tab" :class="{ active: typeFilter === 'all' }" @click="typeFilter = 'all'">
+        {{ t("market.manage.tabAll") }}
       </button>
-      <button class="tab" :class="{ active: typeFilter === 'plugin' }" @click="typeFilter = 'plugin'">插件</button>
-      <button class="tab" :class="{ active: typeFilter === 'module' }" @click="typeFilter = 'module'">模块</button>
-      <button class="tab" :class="{ active: typeFilter === 'branch' }" @click="typeFilter = 'branch'">分支</button>
+      <button class="tab" :class="{ active: typeFilter === 'character' }" @click="typeFilter = 'character'">
+        {{ t("market.manage.tabCharacter") }}
+      </button>
+      <button class="tab" :class="{ active: typeFilter === 'plugin' }" @click="typeFilter = 'plugin'">
+        {{ t("market.manage.tabPlugin") }}
+      </button>
+      <button class="tab" :class="{ active: typeFilter === 'module' }" @click="typeFilter = 'module'">
+        {{ t("market.manage.tabModule") }}
+      </button>
+      <button class="tab" :class="{ active: typeFilter === 'branch' }" @click="typeFilter = 'branch'">
+        {{ t("market.manage.tabBranch") }}
+      </button>
       <button class="tab" :class="{ active: typeFilter === 'announcement' }" @click="typeFilter = 'announcement'">
-        公告
+        {{ t("market.manage.tabAnnounce") }}
       </button>
     </div>
 
-    <p v-if="loading" class="state">加载中...</p>
+    <p v-if="loading" class="state">{{ t("market.manage.loading") }}</p>
     <p v-else-if="err" class="state err">{{ err }}</p>
     <ul v-else-if="filtered.length" class="list">
       <li v-for="item in filtered" :key="item.id" class="row">
@@ -147,18 +162,20 @@ onMounted(() => {
           <p class="title">{{ item.title }}</p>
           <p class="desc">{{ item.description }}</p>
           <p class="tiny">
-            {{ CONTENT_TYPE_LABELS[item.type] }} · {{ item.version }} ·
+            {{ t(`market.contentType.${item.type}`) }} · {{ item.version }} ·
             <span :class="item.status === 'published' ? 'ok' : 'warn'">{{ item.status }}</span>
           </p>
         </div>
         <div class="ops">
-          <button @click="editItem(item)">编辑</button>
-          <button @click="toggleStatus(item)">{{ item.status === 'published' ? '下架' : '恢复' }}</button>
-          <button class="danger" @click="removeItem(item)">删除</button>
+          <button @click="editItem(item)">{{ t("market.manage.edit") }}</button>
+          <button @click="toggleStatus(item)">
+            {{ item.status === "published" ? t("market.manage.hide") : t("market.manage.restore") }}
+          </button>
+          <button class="danger" @click="removeItem(item)">{{ t("market.manage.delete") }}</button>
         </div>
       </li>
     </ul>
-    <p v-else class="state">暂无内容。</p>
+    <p v-else class="state">{{ t("market.manage.empty") }}</p>
   </template>
 </template>
 
@@ -251,4 +268,3 @@ h1 {
   color: var(--danger);
 }
 </style>
-

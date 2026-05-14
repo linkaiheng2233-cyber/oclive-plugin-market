@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { useMarketCopy } from '../composables/useMarketCopy'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import type { ContentItem } from '../types'
 
+const { t } = useI18n()
 const mumu = useMarketCopy()
 
 const supabase = getSupabaseClient()
@@ -64,10 +66,10 @@ const hub = computed(() => {
       <p class="lead">{{ mumu.homeLead }}</p>
     </header>
 
-    <section class="tiles" aria-label="功能入口">
-      <RouterLink v-for="t in hub" :key="t.to" :to="t.to" class="tile" :class="{ 'tile--primary': t.primary }">
-        <span class="tile-k">{{ t.title }}</span>
-        <span class="tile-d">{{ t.desc }}</span>
+    <section class="tiles" :aria-label="t('market.homeTilesAria')">
+      <RouterLink v-for="link in hub" :key="link.to" :to="link.to" class="tile" :class="{ 'tile--primary': link.primary }">
+        <span class="tile-k">{{ link.title }}</span>
+        <span class="tile-d">{{ link.desc }}</span>
       </RouterLink>
       <RouterLink to="/forum" class="tile">
         <span class="tile-k">{{ mumu.hubForum.title }}</span>

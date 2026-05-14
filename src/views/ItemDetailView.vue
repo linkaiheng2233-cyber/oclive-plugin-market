@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { RouterLink } from 'vue-router'
 import { getSupabaseClient } from '../lib/supabase'
 import { CONTENT_ITEM_SELECT, mapContentRow, type ContentItemRow } from '../lib/contentItems'
 import { useMarketCopy } from '../composables/useMarketCopy'
-import { CONTENT_TYPE_LABELS, type ContentItem } from '../types'
+import type { ContentItem } from '../types'
 
+const { t } = useI18n()
 const mumu = useMarketCopy()
 
 const props = defineProps<{ id: string }>()
@@ -18,6 +20,10 @@ const showDownload = computed(
   () =>
     item.value?.type === 'character' &&
     (item.value.download_url?.trim()?.length ?? 0) > 0
+)
+
+const typeLabel = computed(() =>
+  item.value ? t(`market.contentType.${item.value.type}`) : '',
 )
 
 async function load() {
@@ -56,7 +62,7 @@ function openDownload() {
     <nav class="crumb">
       <RouterLink to="/browse">{{ mumu.detailCrumbBrowse }}</RouterLink>
       <span class="sep">/</span>
-      <span>详情</span>
+      <span>{{ t('market.detailCrumbsTitle') }}</span>
     </nav>
 
     <p v-if="loading" class="state">{{ mumu.detailLoading }}</p>
@@ -66,9 +72,9 @@ function openDownload() {
       <header class="header">
         <h1>{{ item.title }}</h1>
         <p class="meta">
-          <span>{{ CONTENT_TYPE_LABELS[item.type] }}</span>
-          <span>作者 {{ item.author_name || '—' }}</span>
-          <span>版本 {{ item.version }}</span>
+          <span>{{ typeLabel }}</span>
+          <span>{{ t('market.metaAuthor', { name: item.author_name || '—' }) }}</span>
+          <span>{{ t('market.metaVersion', { v: item.version }) }}</span>
         </p>
         <p v-if="item.tags?.length" class="tags">
           <span v-for="t in item.tags" :key="t" class="tag">{{ t }}</span>
@@ -80,7 +86,7 @@ function openDownload() {
       </section>
 
       <div v-if="showDownload" class="dl">
-        <button type="button" class="btn" @click="openDownload">下载</button>
+        <button type="button" class="btn" @click="openDownload">{{ t('market.download') }}</button>
         <p class="hint">{{ mumu.dlHint }}</p>
       </div>
       <div
