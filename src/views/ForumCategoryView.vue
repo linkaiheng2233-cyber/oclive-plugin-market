@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
 import type { ForumCategory, ForumThread } from '../lib/forumApi'
 import { getForumCategoryBySlug, listThreadsByCategory } from '../lib/forumApi'
 
+const { t } = useI18n()
 const supabase = getSupabaseClient()
 const route = useRoute()
 const { userId } = useAuthContext()
@@ -34,7 +36,7 @@ async function load() {
   }
   if (!cat) {
     loading.value = false
-    err.value = '找不到这个版块。'
+    err.value = t('market.forum.errCategoryNotFound')
     return
   }
   category.value = cat as ForumCategory
@@ -54,43 +56,50 @@ onMounted(() => void load())
 
 <template>
   <div class="crumb">
-    <RouterLink to="/forum">论坛</RouterLink>
+    <RouterLink to="/forum">{{ t('market.forum.crumbForum') }}</RouterLink>
     <span class="sep">/</span>
     <span v-if="category">{{ category.title }}</span>
-    <span v-else>版块</span>
+    <span v-else>{{ t('market.forum.crumbCategory') }}</span>
   </div>
 
   <div class="page-head">
     <div class="head-left">
-      <h1>{{ category?.title || '版块' }}</h1>
+      <h1>{{ category?.title || t('market.forum.crumbCategory') }}</h1>
       <p class="sub">{{ category?.description || '—' }}</p>
     </div>
     <div class="head-right">
       <RouterLink v-if="canPost" class="btn" :to="`/forum/new?category=${encodeURIComponent(category!.slug)}`">
-        发主题
+        {{ t('market.forum.newThread') }}
       </RouterLink>
       <RouterLink v-else-if="!userId" class="btn" :to="`/me?redirect=${encodeURIComponent(route.fullPath)}`">
-        登录后发帖
+        {{ t('market.forum.loginToPost') }}
       </RouterLink>
-      <span v-else class="btn btn--disabled" aria-disabled="true">只读版块</span>
+      <span v-else class="btn btn--disabled" aria-disabled="true">{{ t('market.forum.readOnlyBoard') }}</span>
     </div>
   </div>
 
-  <p v-if="!supabase" class="warn">未配置 Supabase 环境变量，论坛不可用。</p>
-  <p v-else-if="loading" class="state">加载中...</p>
+  <p v-if="!supabase" class="warn">{{ t('market.noSupabase') }}</p>
+  <p v-else-if="loading" class="state">{{ t('market.loading') }}</p>
   <p v-else-if="err" class="state err">{{ err }}</p>
   <ul v-else class="threads">
-    <li v-for="t in threads" :key="t.id" class="thread">
-      <RouterLink class="thread-link" :to="`/t/${t.id}`">
+    <li v-for="thr in threads" :key="thr.id" class="thread">
+      <RouterLink class="thread-link" :to="`/t/${thr.id}`">
         <div class="row">
-          <span class="title">{{ t.title }}</span>
-          <span v-if="t.status === 'locked'" class="badge">锁</span>
-          <span v-else-if="t.status === 'hidden'" class="badge badge--warn">隐藏</span>
+          <span class="title">{{ thr.title }}</span>
+          <span v-if="thr.status === 'locked'" class="badge">{{ t('market.forum.badgeLock') }}</span>
+          <span v-else-if="thr.status === 'hidden'" class="badge badge--warn">{{ t('market.forum.badgeHidden') }}</span>
         </div>
-        <p class="meta">回复 {{ t.reply_count }} · {{ new Date(t.updated_at).toLocaleString() }}</p>
+        <p class="meta">
+          {{
+            t('market.forum.threadMetaLine', {
+              count: thr.reply_count,
+              updated: new Date(thr.updated_at).toLocaleString(),
+            })
+          }}
+        </p>
       </RouterLink>
     </li>
-    <li v-if="!threads.length" class="empty">还没有主题～你来开个头？</li>
+    <li v-if="!threads.length" class="empty">{{ t('market.forum.emptyThreads') }}</li>
   </ul>
 </template>
 
@@ -197,4 +206,3 @@ h1 {
   color: var(--fg-muted);
 }
 </style>
-

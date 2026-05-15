@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AvatarImg from '../components/AvatarImg.vue'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
 import type { ForumCategory, ForumPost, ForumProfileLite, ForumThread } from '../lib/forumApi'
 import { createReply, createReport, getProfileLite, getThread, listThreadPosts } from '../lib/forumApi'
 
+const { t } = useI18n()
 const supabase = getSupabaseClient()
 const route = useRoute()
 const { userId, isAdmin } = useAuthContext()
@@ -46,23 +48,22 @@ async function load() {
   author.value = null
   postAuthors.value = {}
 
-  const { data: t, error: tErr } = await getThread(supabase, threadId.value)
+  const { data: trow, error: tErr } = await getThread(supabase, threadId.value)
   if (tErr) {
     loading.value = false
     err.value = tErr.message
     return
   }
-  if (!t) {
+  if (!trow) {
     loading.value = false
-    err.value = '找不到这个主题。'
+    err.value = t('market.forum.errThreadNotFound')
     return
   }
-  thread.value = t as ForumThread
+  thread.value = trow as ForumThread
 
   const { data: authorRow } = await getProfileLite(supabase, thread.value.author_id)
   author.value = (authorRow ?? null) as ForumProfileLite | null
 
-  // category: need slug? we only have id; simplest: fetch via categories table by id
   const { data: catRow, error: cErr } = await supabase
     .from('forum_categories')
     .select('*')
@@ -100,7 +101,7 @@ async function doReply() {
   const text = replyText.value.trim()
   if (!text) return
   if (threadLocked.value) {
-    toast('这个主题已锁，不能回帖。')
+    toast(t('market.forum.toastThreadLocked'))
     return
   }
   replying.value = true
@@ -111,22 +112,23 @@ async function doReply() {
     return
   }
   replyText.value = ''
-  toast('已回帖。')
+  toast(t('market.forum.toastReplied'))
   await load()
 }
 
 async function report(targetType: 'thread' | 'post', targetId: string) {
   if (!supabase || !userId.value) {
-    toast('先登录再举报～')
+    toast(t('market.forum.toastSignInToReport'))
     return
   }
-  const reason = window.prompt('举报原因代码（spam/abuse/illegal/other）', 'spam')?.trim() || ''
+  const reason =
+    window.prompt(t('market.forum.promptReportReason'), 'spam')?.trim() || ''
   const reasonCode = (['spam', 'abuse', 'illegal', 'other'] as const).includes(reason as any) ? (reason as any) : null
   if (!reasonCode) {
-    toast('原因代码不对，取消了。')
+    toast(t('market.forum.toastBadReportReason'))
     return
   }
-  const reasonText = window.prompt('补充说明（可选）', '') ?? ''
+  const reasonText = window.prompt(t('market.forum.promptReportNote'), '') ?? ''
   const { error } = await createReport({
     supabase,
     targetType,
@@ -139,7 +141,7 @@ async function report(targetType: 'thread' | 'post', targetId: string) {
     toast(error.message)
     return
   }
-  toast('已举报，感谢你帮忙清理环境。')
+  toast(t('market.forum.toastReported'))
 }
 
 watch(threadId, () => void load(), { immediate: true })
@@ -148,15 +150,15 @@ onMounted(() => void load())
 
 <template>
   <div class="crumb">
-    <RouterLink to="/forum">论坛</RouterLink>
+    <RouterLink to="/forum">{{ t('market.forum.crumbForum') }}</RouterLink>
     <span class="sep">/</span>
     <RouterLink v-if="category" :to="`/forum/${category.slug}`">{{ category.title }}</RouterLink>
-    <span v-else>主题</span>
+    <span v-else>{{ t('market.forum.crumbThread') }}</span>
   </div>
 
   <p v-if="info" class="info">{{ info }}</p>
-  <p v-if="!supabase" class="warn">未配置 Supabase 环境变量，论坛不可用。</p>
-  <p v-else-if="loading" class="state">加载中...</p>
+  <p v-if="!supabase" class="warn">{{ t('market.noSupabase') }}</p>
+  <p v-else-if="loading" class="state">{{ t('market.loading') }}</p>
   <p v-else-if="err" class="state err">{{ err }}</p>
 
   <template v-else-if="thread">
@@ -164,24 +166,29 @@ onMounted(() => void load())
       <div class="head-top">
         <h1 class="title">{{ thread.title }}</h1>
         <div class="head-ops">
-          <button class="ghost" @click="report('thread', thread.id)">举报主题</button>
-          <span v-if="thread.status === 'locked'" class="badge">已锁</span>
-          <span v-else-if="thread.status === 'hidden'" class="badge badge--warn">隐藏</span>
+          <button class="ghost" @click="report('thread', thread.id)">{{ t('market.forum.reportThread') }}</button>
+          <span v-if="thread.status === 'locked'" class="badge">{{ t('market.forum.badgeLocked') }}</span>
+          <span v-else-if="thread.status === 'hidden'" class="badge badge--warn">{{ t('market.forum.badgeHidden') }}</span>
         </div>
       </div>
       <p class="meta">
-        回复 {{ thread.reply_count }} · 更新 {{ new Date(thread.updated_at).toLocaleString() }}
-        <span v-if="threadLocked" class="meta-lock">· 当前只读</span>
+        {{
+          t('market.forum.threadHeadMetaLine', {
+            count: thread.reply_count,
+            updated: new Date(thread.updated_at).toLocaleString(),
+          })
+        }}
+        <span v-if="threadLocked" class="meta-lock">· {{ t('market.forum.metaReadOnly') }}</span>
       </p>
 
       <section v-if="author && (author.donation_url || author.donation_qr_url)" class="donate">
         <div class="donate-left">
-          <p class="donate-title">支持作者</p>
-          <p class="donate-sub">如果这个帖子帮到你了，可以请作者喝杯奶茶～</p>
+          <p class="donate-title">{{ t('market.forum.donateTitle') }}</p>
+          <p class="donate-sub">{{ t('market.forum.donateSub') }}</p>
         </div>
         <div class="donate-right">
           <a v-if="author.donation_url" class="donate-link" :href="author.donation_url" target="_blank" rel="noopener">
-            打赏链接
+            {{ t('market.forum.donateLink') }}
           </a>
           <a
             v-if="author.donation_qr_url"
@@ -190,7 +197,7 @@ onMounted(() => void load())
             target="_blank"
             rel="noopener"
           >
-            收款码
+            {{ t('market.forum.donateQr') }}
           </a>
         </div>
       </section>
@@ -213,10 +220,10 @@ onMounted(() => void load())
             <p class="who">
               <strong>{{ postAuthors[p.author_id]?.username || p.author_id }}</strong>
               <span class="tiny">#{{ p.floor }} · {{ new Date(p.created_at).toLocaleString() }}</span>
-              <span v-if="p.status === 'hidden'" class="badge badge--warn">隐藏</span>
+              <span v-if="p.status === 'hidden'" class="badge badge--warn">{{ t('market.forum.badgeHidden') }}</span>
             </p>
             <div class="post-ops">
-              <button class="ghost" @click="report('post', p.id)">举报</button>
+              <button class="ghost" @click="report('post', p.id)">{{ t('market.forum.reportPost') }}</button>
             </div>
           </div>
           <pre class="content">{{ p.content }}</pre>
@@ -225,19 +232,19 @@ onMounted(() => void load())
     </ol>
 
     <section class="reply card">
-      <h2 class="h2">回帖</h2>
+      <h2 class="h2">{{ t('market.forum.replyTitle') }}</h2>
       <p v-if="!userId" class="hint">
-        <RouterLink :to="`/me?redirect=${encodeURIComponent(route.fullPath)}`">登录</RouterLink>
-        后就能回帖。
+        <RouterLink :to="`/me?redirect=${encodeURIComponent(route.fullPath)}`">{{ t('market.forum.signIn') }}</RouterLink>
+        {{ t('market.forum.signInThenReply') }}
       </p>
-      <p v-else-if="threadLocked" class="hint">主题已锁/版块只读，不能回帖。</p>
+      <p v-else-if="threadLocked" class="hint">{{ t('market.forum.threadLockedNoReply') }}</p>
       <template v-else>
-        <textarea v-model="replyText" rows="6" placeholder="说点啥吧～（纯文本，支持换行）" />
+        <textarea v-model="replyText" rows="6" :placeholder="t('market.forum.replyPlaceholder')" />
         <div class="ops">
           <button :disabled="replying || !replyText.trim() || !canReply" @click="doReply">
-            {{ replying ? '正在发送…' : '发送回帖' }}
+            {{ replying ? t('market.forum.sendingReply') : t('market.forum.sendReply') }}
           </button>
-          <span v-if="isAdmin" class="admin-hint">管理员处理举报请到「管理」页。</span>
+          <span v-if="isAdmin" class="admin-hint">{{ t('market.forum.adminReportHint') }}</span>
         </div>
       </template>
     </section>
@@ -456,4 +463,3 @@ onMounted(() => void load())
   color: var(--fg-soft);
 }
 </style>
-

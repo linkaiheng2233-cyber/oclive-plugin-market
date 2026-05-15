@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter, useRoute, RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useAuthContext } from '../composables/useAuthContext'
 import { getSupabaseClient } from '../lib/supabase'
 import type { ForumCategory } from '../lib/forumApi'
 import { createThreadWithFirstPost, getForumCategoryBySlug, listForumCategories } from '../lib/forumApi'
 
+const { t } = useI18n()
 const supabase = getSupabaseClient()
 const router = useRouter()
 const route = useRoute()
@@ -67,7 +69,7 @@ async function submit() {
   }
   if (!category.value) return
   if (category.value.is_locked) {
-    toast('这个版块是只读的，换个版块试试～')
+    toast(t('market.forum.toastCategoryReadOnly'))
     return
   }
   loading.value = true
@@ -88,10 +90,10 @@ async function submit() {
   })
   loading.value = false
   if (error || !thread) {
-    err.value = error?.message || '提交失败'
+    err.value = error?.message || t('market.forum.errSubmitFailed')
     return
   }
-  toast('发帖成功～')
+  toast(t('market.forum.toastThreadCreated'))
   await router.push(`/t/${thread.id}`)
 }
 
@@ -104,52 +106,56 @@ onMounted(async () => {
 
 <template>
   <div class="crumb">
-    <RouterLink to="/forum">论坛</RouterLink>
+    <RouterLink to="/forum">{{ t('market.forum.crumbForum') }}</RouterLink>
     <span class="sep">/</span>
-    <span>发主题</span>
+    <span>{{ t('market.forum.crumbNewThread') }}</span>
   </div>
 
   <div class="page-head">
-    <h1>发主题</h1>
-    <p class="sub">默认直接发布。别发违法/辱骂/广告，大家就都开心。</p>
+    <h1>{{ t('market.forum.crumbNewThread') }}</h1>
+    <p class="sub">{{ t('market.forum.newThreadPageSub') }}</p>
   </div>
 
   <p v-if="info" class="info">{{ info }}</p>
-  <p v-if="!supabase" class="warn">未配置 Supabase 环境变量，论坛不可用。</p>
+  <p v-if="!supabase" class="warn">{{ t('market.noSupabase') }}</p>
   <p v-else-if="!userId" class="warn">
-    你还没登录～
-    <RouterLink :to="`/me?redirect=${encodeURIComponent(route.fullPath)}`">去登录</RouterLink>
-    再来发帖。
+    {{ t('market.forum.notLoggedInLead') }}
+    <RouterLink :to="`/me?redirect=${encodeURIComponent(route.fullPath)}`">{{ t('market.forum.goSignIn') }}</RouterLink>
+    {{ t('market.forum.thenCreateThread') }}
   </p>
 
   <section v-else class="card">
     <p v-if="err" class="err">{{ err }}</p>
 
     <label class="field">
-      <span>版块</span>
+      <span>{{ t('market.forum.fieldCategory') }}</span>
       <select v-model="category" :disabled="!!qSlug">
-        <option v-for="c in categories" :key="c.id" :value="c">{{ c.title }}{{ c.is_locked ? '（只读）' : '' }}</option>
+        <option v-for="c in categories" :key="c.id" :value="c">
+          {{ c.title }}{{ c.is_locked ? t('market.forum.optionLockedSuffix') : '' }}
+        </option>
       </select>
     </label>
 
     <label class="field">
-      <span>标题</span>
-      <input v-model="title" placeholder="一句话说明你想聊啥" maxlength="120" />
+      <span>{{ t('market.forum.fieldTitle') }}</span>
+      <input v-model="title" :placeholder="t('market.forum.titlePlaceholder')" maxlength="120" />
     </label>
 
     <label class="field">
-      <span>内容</span>
-      <textarea v-model="content" rows="10" placeholder="先做纯文本；想排版就多用换行～" />
+      <span>{{ t('market.forum.fieldContent') }}</span>
+      <textarea v-model="content" rows="10" :placeholder="t('market.forum.contentPlaceholder')" />
     </label>
 
     <label class="field">
-      <span>标签（可选，逗号分隔）</span>
-      <input v-model="tagsInput" placeholder="例如：安装,报错,经验" />
+      <span>{{ t('market.forum.fieldTags') }}</span>
+      <input v-model="tagsInput" :placeholder="t('market.forum.tagsPlaceholder')" />
     </label>
 
     <div class="ops">
-      <button :disabled="loading || !canSubmit" @click="submit">{{ loading ? '正在提交…' : '发布' }}</button>
-      <RouterLink class="ghost" :to="category ? `/forum/${category.slug}` : '/forum'">返回</RouterLink>
+      <button :disabled="loading || !canSubmit" @click="submit">
+        {{ loading ? t('market.forum.submitting') : t('market.submitBtn') }}
+      </button>
+      <RouterLink class="ghost" :to="category ? `/forum/${category.slug}` : '/forum'">{{ t('market.forum.back') }}</RouterLink>
     </div>
   </section>
 </template>
@@ -244,4 +250,3 @@ button:disabled {
   background: var(--surface-2);
 }
 </style>
-

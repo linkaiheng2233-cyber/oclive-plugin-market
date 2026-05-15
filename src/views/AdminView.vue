@@ -218,8 +218,8 @@ onMounted(() => {
         </select>
         <select v-model="statusFilter">
           <option value="all">{{ t("market.admin.filterAllStatus") }}</option>
-          <option value="published">published</option>
-          <option value="hidden">hidden</option>
+          <option value="published">{{ t("market.admin.statusPublished") }}</option>
+          <option value="hidden">{{ t("market.admin.statusHidden") }}</option>
         </select>
       </div>
 
@@ -245,10 +245,10 @@ onMounted(() => {
     <section v-else class="forum">
       <div class="filters">
         <select v-model="reportStatus" @change="loadForumReports">
-          <option value="open">open</option>
-          <option value="handled">handled</option>
-          <option value="rejected">rejected</option>
-          <option value="all">all</option>
+          <option value="open">{{ t("market.admin.reportFilterOpen") }}</option>
+          <option value="handled">{{ t("market.admin.reportFilterHandled") }}</option>
+          <option value="rejected">{{ t("market.admin.reportFilterRejected") }}</option>
+          <option value="all">{{ t("market.admin.reportFilterAll") }}</option>
         </select>
         <button @click="loadForumReports">{{ t("market.admin.refresh") }}</button>
       </div>

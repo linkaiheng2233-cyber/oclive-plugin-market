@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { getSupabaseClient } from '../lib/supabase'
 import type { ForumCategory } from '../lib/forumApi'
 import { listForumCategories } from '../lib/forumApi'
 
+const { t } = useI18n()
 const supabase = getSupabaseClient()
 
 const loading = ref(false)
@@ -31,19 +33,19 @@ onMounted(() => {
 
 <template>
   <div class="page-head">
-    <h1>论坛</h1>
-    <p class="sub">像贴吧那样串门：发帖默认直接发布，遇到垃圾就举报，让管理员来处理。</p>
+    <h1>{{ t('market.forum.title') }}</h1>
+    <p class="sub">{{ t('market.forum.sub') }}</p>
   </div>
 
-  <p v-if="!supabase" class="warn">未配置 Supabase 环境变量，论坛不可用。</p>
-  <p v-else-if="loading" class="state">加载中...</p>
+  <p v-if="!supabase" class="warn">{{ t('market.noSupabase') }}</p>
+  <p v-else-if="loading" class="state">{{ t('market.loading') }}</p>
   <p v-else-if="err" class="state err">{{ err }}</p>
   <ul v-else class="cats">
     <li v-for="c in cats" :key="c.id" class="cat">
       <RouterLink class="cat-link" :to="`/forum/${c.slug}`">
         <div class="cat-top">
           <span class="cat-title">{{ c.title }}</span>
-          <span v-if="c.is_locked" class="badge">只读</span>
+          <span v-if="c.is_locked" class="badge">{{ t('market.forum.badgeReadOnly') }}</span>
         </div>
         <p class="cat-desc">{{ c.description }}</p>
       </RouterLink>
@@ -110,4 +112,3 @@ onMounted(() => {
   color: var(--fg-soft);
 }
 </style>
-
