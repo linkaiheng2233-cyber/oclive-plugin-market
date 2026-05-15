@@ -295,5 +295,76 @@ export default {
       promptReject: "Rejection reason (audit log)",
       defaultReject: "Invalid report",
     },
+    avatarAlt: "Avatar",
+    creatorDocs: {
+      heroTitle: "Welcome to Oclive creator docs",
+      heroLead:
+        "For creators who use {editor} to build role packs: wire layouts, understand {uiJson}, and fix common issues. Plugin work and deep customization live on GitHub (see footer).",
+      editorStrong: "the pack editor",
+      readMore: "Read →",
+      footDevPrefix: "Building plugins or going deeper? Visit ",
+      footDevLink: "the creator-docs tree on GitHub",
+      footDevSuffix: ".",
+      footMdPrefix: "Browse Markdown sources:",
+      footMdLink: "index.md",
+      cards: {
+        uiJson: {
+          title: "Role pack UI guide",
+          desc: "ui.json shells, slots, themes, and layout—how to set them in the editor.",
+        },
+        faq: {
+          title: "FAQ",
+          desc: "Exporting ui.json, themes not applying, slot order, multi-role quirks.",
+        },
+        compatibility: {
+          title: "Compatibility",
+          desc: "Editor + host 0.2.x pairing notes and upgrade hints.",
+        },
+        pluginSlots: {
+          title: "Plugin slots & hotkeys (host-aligned)",
+          desc: "Official slot names and skins—where the host exposes hooks.",
+        },
+      },
+      pageTitleUiJson: "Role pack UI guide",
+      pageTitleFaq: "FAQ",
+      pageTitleCompatibility: "Compatibility",
+      pageTitlePluginSlots: "Plugin slots & hotkeys",
+      docLoadErr: "Could not load document ({status})",
+      docLoadFail: "Load failed",
+      bcAria: "Breadcrumb",
+      bcHome: "Creator docs",
+      docLoading: "Loading…",
+      backHome: "← Back to docs home",
+      githubFullDocs: "Full creator docs on GitHub (plugins, protocol, API)",
+    },
+    versionsPage: {
+      eyebrow: "GitHub Releases · public repos",
+      title: "Downloads",
+      lead:
+        "Lists come straight from GitHub Releases—compare versions and grab installers without signing in. Empty lists usually mean the repo has no releases yet.",
+      ownerPrefix: "Owner:",
+      refreshDoing: "Refreshing…",
+      refresh: "Reload",
+      lastFetch: "Last successful fetch: {time}",
+      loadingList: "Fetching releases from GitHub…",
+      noAssets: "No assets on this tag—open the release page for notes or source.",
+      emptyReleases: "No releases yet—try again later or check the repo commits.",
+      dateDash: "—",
+      releasesLink: "{owner}/{repo} → Releases",
+      products: {
+        launcher: {
+          title: "oclive launcher",
+          blurb: "Open the editor and chat app, env checks, role pack install helpers.",
+        },
+        editor: {
+          title: "Role pack editor",
+          blurb: "Write packs and export zips.",
+        },
+        runtime: {
+          title: "oclive runtime (chat)",
+          blurb: "Main app: pick a role and chat.",
+        },
+      },
+    },
   },
 };

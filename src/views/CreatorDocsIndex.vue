@@ -1,42 +1,41 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const base = import.meta.env.BASE_URL
 const githubDocs =
   'https://github.com/linkaiheng2233-cyber/oclivenewnew/tree/main/creator-docs'
 
-const cards = [
-  {
-    title: '角色包配置指南',
-    desc: '了解 ui.json：整壳、插槽、主题与布局；以及在编写器中如何配置。',
-    to: '/docs/creator/ui-json-guide',
-  },
-  {
-    title: '常见问题',
-    desc: '导出 ui.json、主题不生效、整壳与插槽顺序、多角色差异等。',
-    to: '/docs/creator/faq',
-  },
-  {
-    title: '版本兼容性',
-    desc: '编写器与主程序 0.2.x 搭配建议与升级提示。',
-    to: '/docs/creator/compatibility',
-  },
-  {
-    title: '插件插槽与快捷键（宿主对齐）',
-    desc: '官方槽名、多外观；供创作者理解「宿主界面有哪些入口」。',
-    to: '/docs/creator/plugin-slots-hotkeys',
-  },
-] as const
+const cardDefs = [
+  { key: 'uiJson' as const, to: '/docs/creator/ui-json-guide' },
+  { key: 'faq' as const, to: '/docs/creator/faq' },
+  { key: 'compatibility' as const, to: '/docs/creator/compatibility' },
+  { key: 'pluginSlots' as const, to: '/docs/creator/plugin-slots-hotkeys' },
+]
+
+const cards = computed(() =>
+  cardDefs.map((c) => ({
+    to: c.to,
+    title: t(`market.creatorDocs.cards.${c.key}.title`),
+    desc: t(`market.creatorDocs.cards.${c.key}.desc`),
+  }))
+)
 </script>
 
 <template>
   <div class="creator-docs">
     <header class="hero">
-      <h1>欢迎来到 Oclive 创作者文档</h1>
-      <p class="lead">
-        面向使用<strong>编写器</strong>制作角色包的创作者：配置前端布局、理解
-        <code>ui.json</code>、排查常见问题。插件开发与深度定制请参阅底部 GitHub 链接。
-      </p>
+      <h1>{{ t('market.creatorDocs.heroTitle') }}</h1>
+      <i18n-t keypath="market.creatorDocs.heroLead" tag="p" class="lead">
+        <template #editor>
+          <strong>{{ t('market.creatorDocs.editorStrong') }}</strong>
+        </template>
+        <template #uiJson>
+          <code>ui.json</code>
+        </template>
+      </i18n-t>
     </header>
 
     <ul class="cards" role="list">
@@ -44,19 +43,22 @@ const cards = [
         <RouterLink :to="c.to" class="card">
           <h2>{{ c.title }}</h2>
           <p>{{ c.desc }}</p>
-          <span class="more">阅读 →</span>
+          <span class="more">{{ t('market.creatorDocs.readMore') }}</span>
         </RouterLink>
       </li>
     </ul>
 
     <footer class="foot">
       <p>
-        需要开发插件或深度定制？请访问
-        <a :href="githubDocs" target="_blank" rel="noopener noreferrer">GitHub 文档仓库（creator-docs）</a>。
+        {{ t('market.creatorDocs.footDevPrefix') }}
+        <a :href="githubDocs" target="_blank" rel="noopener noreferrer">{{ t('market.creatorDocs.footDevLink') }}</a>
+        {{ t('market.creatorDocs.footDevSuffix') }}
       </p>
       <p class="muted">
-        纯 Markdown 源文件也可在仓库中浏览：
-        <a :href="`${base}docs/creator/index.md`" target="_blank" rel="noopener noreferrer">index.md</a>
+        {{ t('market.creatorDocs.footMdPrefix') }}
+        <a :href="`${base}docs/creator/index.md`" target="_blank" rel="noopener noreferrer">{{
+          t('market.creatorDocs.footMdLink')
+        }}</a>
       </p>
     </footer>
   </div>

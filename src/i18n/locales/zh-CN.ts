@@ -295,5 +295,76 @@ export default {
       promptReject: "驳回原因（会写入审计记录）",
       defaultReject: "不成立",
     },
+    avatarAlt: "头像",
+    creatorDocs: {
+      heroTitle: "欢迎来到 Oclive 创作者文档",
+      heroLead:
+        "面向使用{editor}制作角色包的创作者：配置前端布局、理解 {uiJson}、排查常见问题。插件开发与深度定制请参阅底部 GitHub 链接。",
+      editorStrong: "编写器",
+      readMore: "阅读 →",
+      footDevPrefix: "需要开发插件或深度定制？请访问 ",
+      footDevLink: "GitHub 文档仓库（creator-docs）",
+      footDevSuffix: "。",
+      footMdPrefix: "纯 Markdown 源文件也可在仓库中浏览：",
+      footMdLink: "index.md",
+      cards: {
+        uiJson: {
+          title: "角色包配置指南",
+          desc: "了解 ui.json：整壳、插槽、主题与布局；以及在编写器中如何配置。",
+        },
+        faq: {
+          title: "常见问题",
+          desc: "导出 ui.json、主题不生效、整壳与插槽顺序、多角色差异等。",
+        },
+        compatibility: {
+          title: "版本兼容性",
+          desc: "编写器与主程序 0.2.x 搭配建议与升级提示。",
+        },
+        pluginSlots: {
+          title: "插件插槽与快捷键（宿主对齐）",
+          desc: "官方槽名、多外观；供创作者理解「宿主界面有哪些入口」。",
+        },
+      },
+      pageTitleUiJson: "角色包配置指南",
+      pageTitleFaq: "常见问题",
+      pageTitleCompatibility: "版本兼容性",
+      pageTitlePluginSlots: "插件插槽与快捷键（宿主对齐）",
+      docLoadErr: "无法加载文档（{status}）",
+      docLoadFail: "加载失败",
+      bcAria: "面包屑",
+      bcHome: "创作者文档",
+      docLoading: "加载中…",
+      backHome: "← 返回文档首页",
+      githubFullDocs: "GitHub 完整创作者文档（插件开发、协议、API 等）",
+    },
+    versionsPage: {
+      eyebrow: "GitHub Releases · 公开仓库",
+      title: "软件版本与下载",
+      lead:
+        "下列列表直接来自 GitHub 发布页，打开本网站即可查看可更新的版本与安装包链接，无需登录。若列表空白，可能是该仓库尚未创建 Release。",
+      ownerPrefix: "组织/用户：",
+      refreshDoing: "刷新中…",
+      refresh: "重新拉取",
+      lastFetch: "上次成功拉取：{time}",
+      loadingList: "正在从 GitHub 读取发布列表…",
+      noAssets: "本标签下暂无附件，请到发布页查看说明或源码。",
+      emptyReleases: "暂无 Release，请稍后再来或前往仓库查看提交记录。",
+      dateDash: "—",
+      releasesLink: "{owner}/{repo} → Releases",
+      products: {
+        launcher: {
+          title: "oclive 启动器",
+          blurb: "一键打开编写器与聊天软件、环境检测、角色包安装",
+        },
+        editor: {
+          title: "角色包编写器",
+          blurb: "写人设与导出角色包",
+        },
+        runtime: {
+          title: "oclive 运行时（聊天）",
+          blurb: "主程序：选角与对话",
+        },
+      },
+    },
   },
 };

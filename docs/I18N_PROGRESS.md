@@ -14,7 +14,7 @@ Command: `rg -l "\\p{Han}" --glob "*.vue" --glob "*.ts" src`
 
 Covers views (`HomeView`, `BrowseView`, forum views, admin, …), `AppHeader.vue`, and i18n under `src/i18n/locales/` plus `src/composables/useMarketCopy.ts`.
 
-**Follow-up:** `Forum*View` wired to `market.forum.*` (zh/en). Remaining hotspots: `AdminView`, embedded creator-docs shells, `types.ts` display names, and any new views—extend `market.*` and `useI18n` / `t()` for full EN parity.
+**Follow-up:** `Forum*View`, `VersionsView`, `CreatorDocs*`, `AdminView` filters, `AvatarImg` alt wired to `market.*` (zh/en). Remaining: `AnnouncementsView` if any literals, `types.ts` comments only, embedded `.md` bodies stay Chinese.
 
 ## Build
 

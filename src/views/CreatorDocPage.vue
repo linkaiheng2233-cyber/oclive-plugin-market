@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { marked } from 'marked'
 
-const ALLOWED = new Set(['ui-json-guide', 'faq', 'compatibility'])
+const ALLOWED = new Set(['ui-json-guide', 'faq', 'compatibility', 'plugin-slots-hotkeys'])
 
-const TITLES: Record<string, string> = {
-  'ui-json-guide': '角色包配置指南',
-  faq: '常见问题',
-  compatibility: '版本兼容性',
+const SLUG_TITLE_KEY: Record<string, string> = {
+  'ui-json-guide': 'pageTitleUiJson',
+  faq: 'pageTitleFaq',
+  compatibility: 'pageTitleCompatibility',
+  'plugin-slots-hotkeys': 'pageTitlePluginSlots',
 }
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
 const slug = computed(() => {
   const s = route.params.slug
@@ -22,6 +25,12 @@ const slug = computed(() => {
 const html = ref('')
 const err = ref('')
 const loading = ref(true)
+
+const docTitle = computed(() => {
+  const s = slug.value
+  const k = SLUG_TITLE_KEY[s]
+  return k ? t(`market.creatorDocs.${k}`) : s
+})
 
 async function load() {
   const s = slug.value
@@ -36,13 +45,13 @@ async function load() {
     const url = `${import.meta.env.BASE_URL}docs/creator/${s}.md`
     const res = await fetch(url)
     if (!res.ok) {
-      err.value = `无法加载文档（${res.status}）`
+      err.value = t('market.creatorDocs.docLoadErr', { status: res.status })
       return
     }
     const text = await res.text()
     html.value = await marked.parse(text)
   } catch (e) {
-    err.value = e instanceof Error ? e.message : '加载失败'
+    err.value = e instanceof Error ? e.message : t('market.creatorDocs.docLoadFail')
   } finally {
     loading.value = false
   }
@@ -54,18 +63,18 @@ watch(slug, () => void load())
 
 <template>
   <div class="doc-page">
-    <nav class="breadcrumb" aria-label="面包屑">
-      <RouterLink to="/docs/creator">创作者文档</RouterLink>
+    <nav class="breadcrumb" :aria-label="t('market.creatorDocs.bcAria')">
+      <RouterLink to="/docs/creator">{{ t('market.creatorDocs.bcHome') }}</RouterLink>
       <span aria-hidden="true"> / </span>
-      <span class="current">{{ TITLES[slug] ?? slug }}</span>
+      <span class="current">{{ docTitle }}</span>
     </nav>
 
-    <p v-if="loading" class="status">加载中…</p>
+    <p v-if="loading" class="status">{{ t('market.creatorDocs.docLoading') }}</p>
     <p v-else-if="err" class="status err">{{ err }}</p>
     <article v-else class="doc-body" v-html="html" />
 
     <p class="back">
-      <RouterLink to="/docs/creator">← 返回文档首页</RouterLink>
+      <RouterLink to="/docs/creator">{{ t('market.creatorDocs.backHome') }}</RouterLink>
     </p>
 
     <footer class="foot">
@@ -73,7 +82,7 @@ watch(slug, () => void load())
         href="https://github.com/linkaiheng2233-cyber/oclivenewnew/tree/main/creator-docs"
         target="_blank"
         rel="noopener noreferrer"
-        >GitHub 完整创作者文档（插件开发、协议、API 等）</a
+        >{{ t('market.creatorDocs.githubFullDocs') }}</a
       >
     </footer>
   </div>
@@ -88,7 +97,7 @@ watch(slug, () => void load())
 .breadcrumb {
   font-size: 0.88rem;
   color: var(--fg-muted);
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .breadcrumb a {
@@ -113,34 +122,29 @@ watch(slug, () => void load())
 }
 
 .back {
-  margin: 28px 0 0;
-  font-size: 0.92rem;
+  margin-top: 20px;
 }
 
 .back a {
   color: var(--accent);
-  font-weight: 600;
   text-decoration: none;
 }
 
-.back a:hover {
-  text-decoration: underline;
-}
-
 .foot {
-  margin-top: 32px;
-  padding-top: 20px;
+  margin-top: 28px;
+  padding-top: 18px;
   border-top: 1px solid var(--border);
   font-size: 0.88rem;
 }
 
 .foot a {
   color: var(--accent);
+  font-weight: 600;
 }
 </style>
 
 <style>
-/* 全局：Markdown 正文（v-html） */
+/* Global: Markdown body (v-html) */
 .doc-body {
   font-size: 0.96rem;
   line-height: 1.65;

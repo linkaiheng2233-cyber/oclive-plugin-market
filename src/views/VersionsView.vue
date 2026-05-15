@@ -1,29 +1,32 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { excerptBody, fetchReleases, type GitHubRelease } from '../lib/githubReleases'
+
+const { t, locale } = useI18n()
 
 const owner = (import.meta.env.VITE_RELEASE_OWNER || 'linkaiheng2233-cyber').trim()
 
-const products = [
+const products = computed(() => [
   {
-    key: 'launcher',
-    title: 'oclive 启动器',
+    key: 'launcher' as const,
+    title: t('market.versionsPage.products.launcher.title'),
     repo: (import.meta.env.VITE_RELEASE_REPO_LAUNCHER || 'oclive-launcher').trim(),
-    blurb: '一键打开编写器与聊天软件、环境检测、角色包安装',
+    blurb: t('market.versionsPage.products.launcher.blurb'),
   },
   {
-    key: 'editor',
-    title: '角色包编写器',
+    key: 'editor' as const,
+    title: t('market.versionsPage.products.editor.title'),
     repo: (import.meta.env.VITE_RELEASE_REPO_EDITOR || 'oclive-pack-editor').trim(),
-    blurb: '写人设与导出角色包',
+    blurb: t('market.versionsPage.products.editor.blurb'),
   },
   {
-    key: 'runtime',
-    title: 'oclive 运行时（聊天）',
+    key: 'runtime' as const,
+    title: t('market.versionsPage.products.runtime.title'),
     repo: (import.meta.env.VITE_RELEASE_REPO_RUNTIME || 'oclivenewnew').trim(),
-    blurb: '主程序：选角与对话',
+    blurb: t('market.versionsPage.products.runtime.blurb'),
   },
-] as const
+])
 
 const loading = ref(true)
 const error = ref('')
@@ -36,11 +39,12 @@ async function loadAll() {
   loading.value = true
   error.value = ''
   try {
+    const list = products.value
     const results = await Promise.all(
-      products.map((p) => fetchReleases(owner, p.repo, 20).then((list) => [p.key, list] as const))
+      list.map((p) => fetchReleases(owner, p.repo, 20).then((releases) => [p.key, releases] as const))
     )
     const map: Record<string, GitHubRelease[]> = {}
-    for (const [k, list] of results) map[k] = list
+    for (const [k, releases] of results) map[k] = releases
     byRepo.value = map
     updatedAt.value = Date.now()
   } catch (e) {
@@ -52,9 +56,10 @@ async function loadAll() {
 }
 
 function formatDate(iso: string | null) {
-  if (!iso) return '—'
+  if (!iso) return t('market.versionsPage.dateDash')
   try {
-    return new Date(iso).toLocaleString('zh-CN', {
+    const loc = locale.value === 'en-US' ? 'en-US' : 'zh-CN'
+    return new Date(iso).toLocaleString(loc, {
       dateStyle: 'medium',
       timeStyle: 'short',
     })
@@ -71,24 +76,27 @@ onMounted(() => {
 <template>
   <div class="versions-page">
     <header class="head">
-      <p class="eyebrow">GitHub Releases · 公开仓库</p>
-      <h1>软件版本与下载</h1>
+      <p class="eyebrow">{{ t('market.versionsPage.eyebrow') }}</p>
+      <h1>{{ t('market.versionsPage.title') }}</h1>
       <p class="lead">
-        下列列表直接来自 GitHub 发布页，打开本网站即可查看<strong>可更新的版本</strong>与安装包链接，无需登录。
-        若列表空白，可能是该仓库尚未创建 Release。
+        {{ t('market.versionsPage.lead') }}
       </p>
       <p class="owner-line">
-        组织/用户：<a :href="repoBase" target="_blank" rel="noopener">{{ owner }}</a>
+        {{ t('market.versionsPage.ownerPrefix') }}<a :href="repoBase" target="_blank" rel="noopener">{{ owner }}</a>
         <button type="button" class="btn-refresh" :disabled="loading" @click="loadAll">
-          {{ loading ? '刷新中…' : '重新拉取' }}
+          {{ loading ? t('market.versionsPage.refreshDoing') : t('market.versionsPage.refresh') }}
         </button>
       </p>
       <p v-if="updatedAt && !error" class="muted tiny">
-        上次成功拉取：{{ new Date(updatedAt).toLocaleString('zh-CN') }}
+        {{
+          t('market.versionsPage.lastFetch', {
+            time: new Date(updatedAt).toLocaleString(locale.value === 'en-US' ? 'en-US' : 'zh-CN'),
+          })
+        }}
       </p>
     </header>
 
-    <p v-if="loading" class="state">正在从 GitHub 读取发布列表…</p>
+    <p v-if="loading" class="state">{{ t('market.versionsPage.loadingList') }}</p>
     <p v-else-if="error" class="state err">{{ error }}</p>
 
     <template v-else>
@@ -96,7 +104,7 @@ onMounted(() => {
         <div class="product-head">
           <h2>{{ p.title }}</h2>
           <a class="repo-link" :href="`${repoBase}/${p.repo}/releases`" target="_blank" rel="noopener">
-            {{ owner }}/{{ p.repo }} → Releases
+            {{ t('market.versionsPage.releasesLink', { owner, repo: p.repo }) }}
           </a>
         </div>
         <p class="blurb">{{ p.blurb }}</p>
@@ -115,10 +123,10 @@ onMounted(() => {
                 <span class="size">{{ (a.size / 1024 / 1024).toFixed(1) }} MB</span>
               </li>
             </ul>
-            <p v-else class="no-assets muted tiny">本标签下暂无附件，请到发布页查看说明或源码。</p>
+            <p v-else class="no-assets muted tiny">{{ t('market.versionsPage.noAssets') }}</p>
           </li>
         </ul>
-        <p v-else class="empty muted">暂无 Release，请稍后再来或前往仓库查看提交记录。</p>
+        <p v-else class="empty muted">{{ t('market.versionsPage.emptyReleases') }}</p>
       </section>
     </template>
   </div>

@@ -32,13 +32,13 @@ export async function fetchReleases(
     const rem = r.headers.get('x-ratelimit-remaining')
     throw new Error(
       rem === '0'
-        ? 'GitHub 接口访问次数暂时用完，请过几分钟再试。'
-        : `GitHub 拒绝访问（403），请稍后再试。`
+        ? 'GitHub API rate limit reached for this IP; try again in a few minutes.'
+        : 'GitHub returned 403; try again later.'
     )
   }
   if (!r.ok) {
     const t = await r.text()
-    throw new Error(`无法拉取发布列表（${r.status}）${t ? `：${t.slice(0, 120)}` : ''}`)
+    throw new Error(`Failed to fetch releases (${r.status})${t ? `: ${t.slice(0, 120)}` : ''}`)
   }
   return r.json() as Promise<GitHubRelease[]>
 }
