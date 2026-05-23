@@ -1,4 +1,14 @@
 node_modules
 dist
+dist-ssr/
 .DS_Store
-*.local
+*.log
+
+# Environment (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
