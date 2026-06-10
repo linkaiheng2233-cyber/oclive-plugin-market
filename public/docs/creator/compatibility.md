@@ -4,20 +4,21 @@
 
 ---
 
-## 当前推荐（0.2.x）
+## 当前推荐（0.3.x）
 
 | 编写器 | 主程序 |
 |--------|--------|
-| **0.2.x** | **0.2.0** 及以上（同为 **0.2** 线最稳妥） |
+| **0.3.x** | **0.3.0** 及以上（同为 **0.3** 线最稳妥） |
 
-在此组合下，角色包中的 **`ui.json`**（整壳、插槽、主题、布局等）与当前公开的 schema 一致，可减少「导出了但主程序不认」的问题。
+在此组合下，v2 蓝图 **`pipeline.ocblueprint`**、**`core_personality.txt`**（Tier0 人设真源）、**`meta.reply_quality_anchor`**（或内核默认）、可选 **`config.json`** / **`user_identities/`** 与编写器 zip/文件夹导出形状一致，可减少「导出了但主程序不吃」的问题。
 
 ---
 
 ## 升级建议
 
-- **建议保持编写器与主程序同为 0.2.x**，或至少 **次版本不要跨太大**；发新版后若出现异常，请两边都更新到最新 **0.2.x** 再试。
+- **建议保持编写器与主程序同为 0.3.x**，或至少 **次版本不要跨太大**；发新版后若出现异常，请两边都更新到最新 **0.3.x** 再试。
 - 若只升级其一，可能出现：编写器多出来的字段在主程序里**暂时不用**，或主程序已支持的新能力旧编写器**导不出**——以各自 [CHANGELOG](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/CHANGELOG.md) 为准。
+- **人设与锚点**：运行时 Tier0 只读 **`core_personality.txt`**；**`prompts/system.md` 不参与 PromptBuilder**。回复质量锚点 SSOT 为蓝图 **`meta.reply_quality_anchor`**（空则内核默认）；`prompts/reply_quality_anchor.md` 仅为人类可读镜像。
 
 ---
 
