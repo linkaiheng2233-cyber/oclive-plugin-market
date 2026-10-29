@@ -1,72 +1,45 @@
-# Oclive 插件市场（社区站 V1）
+# OCLive 社区站原型
 
-> **状态：已封存（暂停迭代）**
->
-> 该仓库当前作为 **社区站** 的备选实现被封存：后续会观察是否启用/重启开发。  
-> **注意**：它不是 `oclivenewnew` 客户端内置的市场。客户端内置的市场/安装入口统一称为 **Oclive Manager（应用内：插件与后端管理）**。
+**暂停迭代，保留实现供研究与后续评估。它不是 A.I.Live 客户端内置的“插件与后端管理”。**
 
-以 **Supabase** 为数据源的动态站点：浏览资源、查看详情与外部下载链接、登录后发布内容、公告列表。首页为功能入口枢纽，并展示最新一条公告标题。
+A paused Supabase-backed community-site prototype for OCLive, separate from in-app plugin management.
 
-- 契约说明：[PLUGIN_WEB_SECTION.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)
-- 协议文档：[REMOTE_PLUGIN_PROTOCOL.md](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/plugin-and-architecture/REMOTE_PLUGIN_PROTOCOL.md)
+本仓包含资源浏览、详情、外部下载链接、登录后投稿与公告界面。站点是否可用还取决于部署、数据源和认证配置，源码存在不代表已有一个持续运营的公共服务。
 
-## 开发
+## 普通用户入口
 
-推荐使用 **Node 22**（与 CI 一致；仓库根目录有 `.node-version` 供 nvm / fnm 等读取）。
+体验角色与管理运行时能力，请从 [A.I.Live 主仓库](https://github.com/linkaiheng2233-cyber/oclivenewnew)及其[用户手册](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/getting-started/USER_MANUAL.md)开始。
+
+公开目录文件分别在 [插件目录](https://github.com/linkaiheng2233-cyber/awesome-oclive-plugins)和[角色包目录](https://github.com/linkaiheng2233-cyber/awesome-oclive-roles)维护；这些索引与本社区站不是同一交付物。
+
+## 研究与本地开发
+
+本仓 CI 使用 Node.js 22。准备依赖后，可按 `.env.example` 配置自己的 Supabase 项目，再运行：
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-## Supabase
+数据库与演示数据说明见 [supabase/README.md](supabase/README.md)，实际脚本见 [package.json](package.json)。缺少数据源配置时，浏览和投稿不能作为可用功能验收。
 
-1. 复制 `.env.example` 为 `.env.local`，填入：
+## 部署与边界
 
-```bash
-VITE_SUPABASE_URL=...
-VITE_SUPABASE_ANON_KEY=...
-VITE_ADMIN_EMAILS=你的邮箱@example.com
-```
+[Pages workflow](.github/workflows/pages.yml)会在默认发布分支推送时构建并部署；维护者应先确认自己有意更新该站点，再合并会触发部署的变更。前端 `VITE_*` 会进入构建产物，服务端特权密钥不应写入前端配置；访问控制仍须由数据服务的实际策略负责。
 
-2. 在 SQL Editor 中执行 `supabase/schema.sql`（新建项目）。**已有项目**请再执行 `supabase/migrations/001_add_announcement_type.sql`（扩展 `type` 含 `announcement` 并收紧公告插入策略）。
-3. **Authentication**：启用邮箱登录（OTP / magic link）；在 **URL Configuration** 配置 Site URL 与 Redirect URLs（本地 + 线上）。
-4. 使用 **个人设置** 完成登录（写入 `profiles`）。
+网站职责说明见主仓[社区站分区文档](https://github.com/linkaiheng2233-cyber/oclivenewnew/blob/main/creator-docs/roadmap/PLUGIN_WEB_SECTION.md)。暂停状态和未来重启属于单独的产品决定，本页不把路线图描述为已提供的服务。
 
-### 管理员与公告
+问题与研究建议可提交 [Issue](https://github.com/linkaiheng2233-cyber/oclive-plugin-market/issues)。
 
-- 前端「管理」入口：`profiles.is_admin` 或邮箱在 `VITE_ADMIN_EMAILS` 中。
-- **发布公告**时，数据库 RLS 要求 `profiles.is_admin = true`。若仅配置环境变量而未把对应账号设为管理员，插入会失败；请执行 `set_admin_by_email.sql` 或在表中开启 `is_admin`。
 
-### 路由说明
+<!-- Preserve previously published section bookmarks. -->
+<a id="oclive-插件市场社区站-v1"></a>
+<a id="开发"></a>
+<a id="supabase"></a>
+<a id="管理员与公告"></a>
+<a id="路由说明"></a>
+<a id="演示数据可选"></a>
+<a id="构建与部署"></a>
+<a id="安全"></a>
 
-| 路径 | 说明 |
-|------|------|
-| `/` | 入口枢纽 + 最新公告 |
-| `/browse` | 资源列表（可筛选类型） |
-| `/item/:id` | 详情；非公告显示下载按钮 |
-| `/submit` | 发布（需登录） |
-| `/announcements` | 公告列表 |
-| `/me`、`/manage`、`/admin`、`/versions` | 个人、我的上传、管理、版本下载 |
-
-未配置 `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` 时，浏览与发布不可用。
-
-### 演示数据（可选）
-
-站内衣案默认使用 **沐沐语气**（与主项目示例角色「沐沐」一致，见 `src/i18n/locales/zh-CN.ts` / `en-US.ts` 与 `src/composables/useMarketCopy.ts`）。若数据库里还没有内容，可在登录过一次后，于 Supabase SQL Editor 执行 `supabase/seed_demo_mumu.sql`，插入欢迎公告与示例插件（详见 `supabase/README.md`）。沐沐语气公告脚本（开发计划、创作者指路等）见 `supabase/README.md` 与 `supabase/announcements/OPERATIONS.md`。
-
-## 构建与部署
-
-```bash
-npm run build
-```
-
-GitHub Pages 项目站会通过 `VITE_BASE` 自动处理子路径。构建生成 `404.html` 以便子路径刷新。
-
-请在仓库 **Settings → Secrets and variables → Actions** 配置与本地一致的 `VITE_*`（变量名见 `.env.example`）。**我无法替你在网页上添加 Secrets**，需你登录 GitHub 自行粘贴 Supabase 里的 URL 与 anon key。
-
-**Settings → Pages → Build and deployment → Source** 请选择 **GitHub Actions**（不要选 branch `gh-pages`，除非你改用那种方式）。配置好 Secrets 后，**push 到 `main`** 会自动构建并部署到 Pages。
-
-### 安全
-
-- **不要**把 `VITE_SUPABASE_ANON_KEY`、`.env.local` 提交到 Git 或公开泄露。
+旧版章节书签保留在此。[整理前的首页](https://github.com/linkaiheng2233-cyber/oclive-plugin-market/blob/33b52827117888d50a04f8c5f3059e8390c04c1b/README.md)可用于查阅历史说明；现行入口以本页与所链文档为准。
